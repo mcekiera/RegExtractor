@@ -1,7 +1,6 @@
 package Model;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -10,8 +9,8 @@ public class Extractor{
     private static Pattern pattern;
     private static Matcher matcher;
 
-    public static ArrayList<int[]> search(String regex, String input){
-        ArrayList<int[]> startAndEndIndices = new ArrayList<int[]>();
+    public static ArrayList<String> search(String regex, String input){
+        ArrayList<String> startAndEndIndices = new ArrayList<String>();
         if(regex.equals("")){
             return startAndEndIndices;
         }
@@ -22,7 +21,7 @@ public class Extractor{
 
             while(true){
                 if(matcher.find()){
-                    int[] indices = {matcher.start(),matcher.end()};
+                    String indices = matcher.start() + "," + matcher.end();
                     startAndEndIndices.add(indices);
                 }else{
                     return startAndEndIndices;
@@ -40,10 +39,10 @@ public class Extractor{
         return pattern.split(input);
     }
 
-    public static List<List<Integer>> analyze(String regex, String analyzed){
-        List<List<Integer>> patternAndInputInParts = new ArrayList<List<Integer>>();
-        List<Integer> patternParts = new ArrayList<Integer>();
-        List<Integer> inputParts = new ArrayList<Integer>();
+    public static String[] analyze(String regex, String analyzed){
+        String[] patternAndInputInParts = new String[2];
+        StringBuilder patternParts = new StringBuilder();
+        StringBuilder inputParts = new StringBuilder();
 
         for(int i = regex.length(); i >= 0 ; i--){
             try{
@@ -51,8 +50,8 @@ public class Extractor{
                 matcher = pattern.matcher(analyzed);
                 matcher.find();
 
-                inputParts.add(matcher.end());
-                patternParts.add(i);
+                inputParts.append(matcher.end()+",");
+                patternParts.append(i+",");
 
             }catch (PatternSyntaxException ex){
                 ex.printStackTrace();
@@ -61,8 +60,8 @@ public class Extractor{
             }
         }
 
-        patternAndInputInParts.add(patternParts);
-        patternAndInputInParts.add(inputParts);
+        patternAndInputInParts[0]=(patternParts.toString());
+        patternAndInputInParts[1]=(inputParts.toString());
         return patternAndInputInParts;
     }
 }

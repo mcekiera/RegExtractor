@@ -1,6 +1,5 @@
 package RegExtractor;
 
-import Model.Analyzer;
 import Model.Extractor;
 
 import javax.swing.*;
@@ -23,7 +22,6 @@ public class Main {
     Highlighter highlighter;
     Highlighter.HighlightPainter painter = new DefaultHighlighter.
             DefaultHighlightPainter(Color.GREEN);
-    Analyzer analyzer;
 
     public static void main (String[] args){
         Main main = new Main();
@@ -36,7 +34,6 @@ public class Main {
 
         regex = new JTextField(20);
         regex.getDocument().addDocumentListener(new TextListener());
-        analyzer = new Analyzer();
         status = new JTextField(20);
         status.setEnabled(false);
         JButton analyze = new JButton("Analyze");
@@ -56,7 +53,6 @@ public class Main {
         frame.add(analyze, BorderLayout.NORTH);
         frame.add(side,BorderLayout.EAST);
         frame.add(panel, BorderLayout.CENTER);
-        frame.add(analyzer.getAnalyzer(), BorderLayout.SOUTH);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setLocation(50,50);
         frame.setSize(500,500);
