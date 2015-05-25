@@ -1,4 +1,4 @@
-package RegExtractor;
+package Model;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;

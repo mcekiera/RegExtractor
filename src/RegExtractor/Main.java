@@ -1,5 +1,8 @@
 package RegExtractor;
 
+import Model.Analyzer;
+import Model.Extractor;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
