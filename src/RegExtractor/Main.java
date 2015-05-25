@@ -7,6 +7,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class Main {
 
@@ -18,6 +20,7 @@ public class Main {
     Highlighter highlighter;
     Highlighter.HighlightPainter painter = new DefaultHighlighter.
             DefaultHighlightPainter(Color.GREEN);
+    Analyzer analyzer;
 
     public static void main (String[] args){
         Main main = new Main();
@@ -30,19 +33,27 @@ public class Main {
 
         regex = new JTextField(20);
         regex.getDocument().addDocumentListener(new TextListener());
-
+        analyzer = new Analyzer();
         status = new JTextField(20);
         status.setEnabled(false);
-
+        JButton analyze = new JButton("Analyze");
+        analyze.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                analyzer.analyze(regex.getText(), matchDisplay.getText());
+            }
+        });
         JPanel panel = new JPanel(new BorderLayout());
         JPanel side = new JPanel();
         side.setSize(34,43);
 
         panel.add(regex, BorderLayout.NORTH);
         panel.add(buildSplitPane(), BorderLayout.CENTER);
-        frame.add(status, BorderLayout.SOUTH);
+        //frame.add(status, BorderLayout.SOUTH);
+        frame.add(analyze, BorderLayout.NORTH);
         frame.add(side,BorderLayout.EAST);
         frame.add(panel, BorderLayout.CENTER);
+        frame.add(analyzer.getAnalyzer(), BorderLayout.SOUTH);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setLocation(50,50);
         frame.setSize(500,500);
@@ -112,6 +123,7 @@ public class Main {
             splitDisplay.setText("");
             extractor.search(regex.getText(), matchDisplay.getText());
             extractor.split(regex.getText(), matchDisplay.getText());
+
 
         }
     }
