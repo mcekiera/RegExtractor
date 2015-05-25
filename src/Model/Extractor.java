@@ -1,55 +1,68 @@
 package Model;
 
-import RegExtractor.Main;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-public class Extractor {
-    Pattern pattern;
-    Matcher matcher;
-    Main main;
+public class Extractor{
+    private static Pattern pattern;
+    private static Matcher matcher;
 
-    public Extractor(Main main){
-        this.main = main;
-
-    }
-
-    public void search(String regex, String input){
-        if(!regex.equals("")){
-            try{
-                pattern = Pattern.compile(regex,Pattern.MULTILINE);
-                matcher = pattern.matcher(input);
-                boolean match = true;
-                do{
-                    if(matcher.find()){
-                        main.displayResults(matcher.start(),matcher.end());
-                        main.displayStatus("");
-                    }else{
-                        main.displayStatus("Match not found");
-                        match = false;
-                    }
-                }while (match);
-            }catch (PatternSyntaxException ex){
-                //ex.printStackTrace();
-                //main.displayStatus("Incorrect pattern");
-            }
-
+    public static ArrayList<int[]> search(String regex, String input){
+        ArrayList<int[]> startAndEndIndices = new ArrayList<int[]>();
+        if(regex.equals("")){
+            return startAndEndIndices;
         }
-    }
 
-    public void split(String regex, String input){
-        if(!regex.equals("")){
-            try{
-                pattern = Pattern.compile(regex);
-                for(String part : pattern.split(input)){
-                    main.displaySplit("\'" + part + "\'" + "\n");
+        try{
+            pattern = Pattern.compile(regex);
+            matcher = pattern.matcher(input);
+
+            while(true){
+                if(matcher.find()){
+                    int[] indices = {matcher.start(),matcher.end()};
+                    startAndEndIndices.add(indices);
+                }else{
+                    return startAndEndIndices;
                 }
+            }
+
+        }catch (PatternSyntaxException ex){
+            ex.printStackTrace();
+        }
+        return startAndEndIndices;
+    }
+
+    public static String[] split(String regex, String input){
+        pattern = Pattern.compile(regex);
+        return pattern.split(input);
+    }
+
+    public static List<List<Integer>> analyze(String regex, String analyzed){
+        List<List<Integer>> patternAndInputInParts = new ArrayList<List<Integer>>();
+        List<Integer> patternParts = new ArrayList<Integer>();
+        List<Integer> inputParts = new ArrayList<Integer>();
+
+        for(int i = regex.length(); i >= 0 ; i--){
+            try{
+                pattern = Pattern.compile(regex.substring(0,i));
+                matcher = pattern.matcher(analyzed);
+                matcher.find();
+
+                inputParts.add(matcher.end());
+                patternParts.add(i);
+
             }catch (PatternSyntaxException ex){
-                //ex.printStackTrace();
-                //main.displayStatus("Incorrect pattern");
+                ex.printStackTrace();
+            }catch (IllegalStateException ex){
+                ex.printStackTrace();
             }
         }
+
+        patternAndInputInParts.add(patternParts);
+        patternAndInputInParts.add(inputParts);
+        return patternAndInputInParts;
     }
 }

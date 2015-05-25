@@ -32,7 +32,7 @@ public class Main {
 
     public void start(){
         JFrame frame = new JFrame();
-        extractor = new Extractor(this);
+        extractor = new Extractor();
 
         regex = new JTextField(20);
         regex.getDocument().addDocumentListener(new TextListener());
@@ -43,7 +43,7 @@ public class Main {
         analyze.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                analyzer.analyze(regex.getText(), matchDisplay.getText());
+                Extractor.analyze(regex.getText(), matchDisplay.getText());
             }
         });
         JPanel panel = new JPanel(new BorderLayout());
@@ -106,8 +106,8 @@ public class Main {
         public void insertUpdate(DocumentEvent e) {
             highlighter.removeAllHighlights();
             splitDisplay.setText("");
-            extractor.search(regex.getText(), matchDisplay.getText());
-            extractor.split(regex.getText(), matchDisplay.getText());
+            Extractor.search(regex.getText(), matchDisplay.getText());
+            Extractor.split(regex.getText(), matchDisplay.getText());
 
         }
 
@@ -115,8 +115,8 @@ public class Main {
         public void removeUpdate(DocumentEvent e) {
             highlighter.removeAllHighlights();
             splitDisplay.setText("");
-            extractor.search(regex.getText(), matchDisplay.getText());
-            extractor.split(regex.getText(), matchDisplay.getText());
+            Extractor.search(regex.getText(), matchDisplay.getText());
+            Extractor.split(regex.getText(), matchDisplay.getText());
 
         }
 
@@ -124,8 +124,8 @@ public class Main {
         public void changedUpdate(DocumentEvent e) {
             highlighter.removeAllHighlights();
             splitDisplay.setText("");
-            extractor.search(regex.getText(), matchDisplay.getText());
-            extractor.split(regex.getText(), matchDisplay.getText());
+            Extractor.search(regex.getText(), matchDisplay.getText());
+            Extractor.split(regex.getText(), matchDisplay.getText());
 
 
         }
