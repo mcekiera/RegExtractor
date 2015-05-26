@@ -56,4 +56,9 @@ public class ExtractorTest {
         Assert.assertEquals("8,6,5,0,", Extractor.analyze("[a-z]+\\&","abc&")[0]);
         Assert.assertEquals("4,3,1,0,", Extractor.analyze("[a-z]+\\&","abc&")[1]);
     }
+    @Test
+    public void testAnalyzeWithNull() throws Exception{
+        Assert.assertEquals(null, Extractor.analyze("","abc&")[0]);
+        Assert.assertEquals(null, Extractor.analyze("","abc&")[1]);
+    }
 }

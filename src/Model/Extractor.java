@@ -11,9 +11,7 @@ public class Extractor{
 
     public static ArrayList<String> search(String regex, String input){
         ArrayList<String> startAndEndIndices = new ArrayList<String>();
-        if(regex.equals("")){
-            return startAndEndIndices;
-        }
+        if(regex.equals("")) return startAndEndIndices;
 
         try{
             pattern = Pattern.compile(regex);
@@ -44,14 +42,18 @@ public class Extractor{
         StringBuilder patternParts = new StringBuilder();
         StringBuilder inputParts = new StringBuilder();
 
+        if(regex.equals("")) return patternAndInputInParts;
+
         for(int i = regex.length(); i >= 0 ; i--){
             try{
                 pattern = Pattern.compile(regex.substring(0,i));
                 matcher = pattern.matcher(analyzed);
                 matcher.find();
 
-                inputParts.append(matcher.end()+",");
-                patternParts.append(i+",");
+                inputParts.append(matcher.end());
+                inputParts.append(",");
+                patternParts.append(i);
+                patternParts.append(",");
 
             }catch (PatternSyntaxException ex){
                 ex.printStackTrace();
@@ -63,5 +65,19 @@ public class Extractor{
         patternAndInputInParts[0]=(patternParts.toString());
         patternAndInputInParts[1]=(inputParts.toString());
         return patternAndInputInParts;
+    }
+
+    public static int[] arrayStringToInt(String[] toConvert){
+        ArrayList<Integer> temp = new ArrayList<Integer>();
+        for (String part : toConvert){
+            Integer.parseInt(part);
+        }
+        int[] converted = new int[temp.size()];
+        int index = 0;
+        for (int element : temp){
+            converted[index] = element;
+            index++;
+        }
+        return converted;
     }
 }
