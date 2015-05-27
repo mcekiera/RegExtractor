@@ -1,41 +1,37 @@
 package Control;
 
+
 import Interface.UserInterface;
 import Model.Extractor;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 public class Main {
     Extractor extractor;
     UserInterface userInterface;
 
     Main(){
+
         extractor = new Extractor();
         userInterface = new UserInterface(this);
     }
 
-    public static void main(String[] args){
-        Main main = new Main();
+    public void updateView(){
+        String regex = userInterface.getRegEx();
+        String text = userInterface.getTextForMatching();
+
+        ArrayList<String> matched = (ArrayList<String>)extractor.search(regex,text);
+
+        userInterface.highlightMatchedText(matched);
+        userInterface.addExamples();
     }
 
-    public ActionListener getListener(Action action){
-        switch (action){
-            case INPUTCHANGE:
-                return new InputListener();
-            default:
-                return null;
-        }
+    public void analyze(String example){
+        String regex = userInterface.getRegEx();
+        userInterface.updateAnalyzer(regex,example);
 
+        String[] analyzed = extractor.analyze(regex,example);
+        userInterface.highlightAnalyzedElements(analyzed);
     }
 
-    private class InputListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String regex = userInterface.getRegEx();
-            String text = userInterface.getTextForRetrieval();
-
-            userInterface.highlightContent(Extractor.search(regex,text));
-        }
-    }
 }

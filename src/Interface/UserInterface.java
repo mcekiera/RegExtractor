@@ -1,25 +1,30 @@
 package Interface;
 
-import Control.*;
-import Control.Action;
+import Control.Main;
 import Model.Extractor;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class UserInterface {
 
     private JTextField statusBar;
-    private JTextField regexInput;
-    private JTextField regexDisplay;
-    private JTextField exampleDisplay;
-    private JTextArea matcherDisplay;
-    private DefaultListModel<String> splitList;
-    private Highlighter inputHigh;
-    private Highlighter patternHigh;
-    private Highlighter elementHigh;
+    private JTextField inputRegex;
+    private JTextField regexView;
+    private JTextField exampleView;
+    private JTextArea matcherView;
+    private DefaultListModel<String> examples;
+    private JList<String> examplesView;
+    private Highlighter highlighter;
     private Main main;
 
     public UserInterface(Main main){
@@ -38,11 +43,11 @@ public class UserInterface {
     public JPanel buildCentralPanel(){
         JPanel panel = new JPanel(new BorderLayout());
 
-        regexInput = new JTextField();
-        regexInput.addActionListener(main.getListener(Action.INPUTCHANGE));
+        inputRegex = new JTextField();
+        inputRegex.getDocument().addDocumentListener(new TextListener());
 
-        panel.add(regexInput, BorderLayout.NORTH);
-        panel.add(buildExtractorDisplay(),BorderLayout.CENTER);
+        panel.add(inputRegex, BorderLayout.NORTH);
+        panel.add(buildMatcherDisplay(),BorderLayout.CENTER);
         panel.add(buildAnalyzerDisplay(), BorderLayout.SOUTH);
 
         return panel;
@@ -51,23 +56,31 @@ public class UserInterface {
     public JPanel buildAnalyzerDisplay(){
         JPanel panel = new JPanel(new GridLayout(2,1));
 
-        regexDisplay = new JTextField();
-        exampleDisplay = new JTextField();
+        regexView = new JTextField();
+        exampleView = new JTextField();
 
-        panel.add(regexDisplay);
-        panel.add(exampleDisplay);
+        panel.add(regexView);
+        panel.add(exampleView);
 
         return panel;
     }
 
-    public JSplitPane buildExtractorDisplay(){
-        matcherDisplay = new JTextArea();
-        inputHigh = matcherDisplay.getHighlighter();
-        splitList = new DefaultListModel<String>();
-        JList<String> splitterDisplay = new JList<String>(splitList);
-        JScrollPane matchScroll = new JScrollPane(matcherDisplay);
+    public JSplitPane buildMatcherDisplay(){
+        matcherView = new JTextArea();
+        highlighter = matcherView.getHighlighter();
+        matcherView.setWrapStyleWord(true);
+        matcherView.setLineWrap(true);
+        examples = new DefaultListModel<String>();
+        examplesView = new JList<String>(examples);
+        examplesView.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                main.analyze(examplesView.getSelectedValue());
+            }
+        });
+        JScrollPane matchScroll = new JScrollPane(matcherView);
         matchScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-        JScrollPane splitScroll = new JScrollPane(splitterDisplay);
+        JScrollPane splitScroll = new JScrollPane(examplesView);
         splitScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 
         JSplitPane pane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,matchScroll,splitScroll);
@@ -92,36 +105,84 @@ public class UserInterface {
         statusBar.setText(message);
     }
 
-    public void updateAnalysisDisplay(String pattern, String example){
-        regexDisplay.setText(pattern);
-        patternHigh = regexDisplay.getHighlighter();
-        exampleDisplay.setText(example);
-        elementHigh = exampleDisplay.getHighlighter();
-    }
-
-    public void addToSplitList(String element){
-        splitList.addElement(element);
-    }
-
     public String getRegEx(){
-        return regexInput.getText();
+        return inputRegex.getText();
     }
 
-    public String getTextForRetrieval(){
-        return matcherDisplay.getText();
+    public String getTextForMatching(){
+        return matcherView.getText();
     }
 
-    public void highlightContent(ArrayList<String> indices){
-
-        for(String index : indices){
-            int[] temp = Extractor.arrayStringToInt(index.split(","));
-            inputHigh.addHighlight(temp[0],temp[1],);
+    public void highlightMatchedText(ArrayList<String> toHighlight){
+        for(int i = 0; i < toHighlight.size(); i++){
+        int[] temp = Extractor.arrayStringToInt(toHighlight.get(i).split(","));
+            try{
+                highlighter.addHighlight(temp[0], temp[1], getPainter());
+            }catch (BadLocationException ex){
+                ex.printStackTrace();
             }
         }
     }
 
+    public void highlightAnalyzedElements(String[] indices){
+        String[] splittedPattern = indices[0].split(",");
+        Highlighter forPattern = regexView.getHighlighter();
+        String[] splittedExample = indices[1].split(",");
+        Highlighter forExample = exampleView.getHighlighter();
+        Highlighter.HighlightPainter pointer;
+
+        for(int i = splittedPattern.length-1; i >= 0; i--){
+            pointer = getPainter();
+            try{
+            forPattern.addHighlight(0,Integer.parseInt(splittedPattern[i]),pointer);
+            forExample.addHighlight(0,Integer.parseInt(splittedExample[i]),pointer);
+            }catch (BadLocationException ex){
+                ex.printStackTrace();
+            }
+
+        }
+
+    }
+
+    public void updateAnalyzer(String regex,String example){
+        regexView.setText(regex);
+        exampleView.setText(example);
+    }
+
+    public void addExamples(){
+        for(Highlighter.Highlight light : highlighter.getHighlights()){
+            examples.addElement(matcherView.getText().substring(light.getStartOffset(), light.getEndOffset()));
+        }
+    }
+
+    public static Highlighter.HighlightPainter getPainter(){
+            Random r = new Random();
+            return new DefaultHighlighter.DefaultHighlightPainter(new Color(r.nextFloat(),r.nextFloat(),r.nextFloat()));
+    }
+
+    public void resetView(){
+        examples.removeAllElements();
+        highlighter.removeAllHighlights();
+    }
 
 
+    private class TextListener implements DocumentListener {
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            resetView();
+            main.updateView();
+        }
 
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            resetView();
+            main.updateView();
+        }
 
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            resetView();
+            main.updateView();
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package Model;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -9,8 +10,8 @@ public class Extractor{
     private static Pattern pattern;
     private static Matcher matcher;
 
-    public static ArrayList<String> search(String regex, String input){
-        ArrayList<String> startAndEndIndices = new ArrayList<String>();
+    public List<String> search(String regex, String input){
+        List<String> startAndEndIndices = new ArrayList<String>();
         if(regex.equals("")) return startAndEndIndices;
 
         try{
@@ -32,12 +33,7 @@ public class Extractor{
         return startAndEndIndices;
     }
 
-    public static String[] split(String regex, String input){
-        pattern = Pattern.compile(regex);
-        return pattern.split(input);
-    }
-
-    public static String[] analyze(String regex, String analyzed){
+    public String[] analyze(String regex, String analyzed){
         String[] patternAndInputInParts = new String[2];
         StringBuilder patternParts = new StringBuilder();
         StringBuilder inputParts = new StringBuilder();
@@ -56,9 +52,9 @@ public class Extractor{
                 patternParts.append(",");
 
             }catch (PatternSyntaxException ex){
-                ex.printStackTrace();
+                //ex.printStackTrace();
             }catch (IllegalStateException ex){
-                ex.printStackTrace();
+                //ex.printStackTrace();
             }
         }
 
@@ -70,7 +66,7 @@ public class Extractor{
     public static int[] arrayStringToInt(String[] toConvert){
         ArrayList<Integer> temp = new ArrayList<Integer>();
         for (String part : toConvert){
-            Integer.parseInt(part);
+            temp.add(Integer.parseInt(part));
         }
         int[] converted = new int[temp.size()];
         int index = 0;
