@@ -1,8 +1,17 @@
 package Control;
 
+import java.awt.*;
+
 public class Launcher {
 
     public static void main(String[] args){
-        Main main = new Main();
+        EventQueue.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                new Main();
+            }
+
+        });
     }
 }

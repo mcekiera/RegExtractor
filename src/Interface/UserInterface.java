@@ -16,34 +16,40 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class UserInterface {
-
+    private JFrame frame;
     private JTextField statusBar;
     private JTextField inputRegex;
     private JTextField regexView;
     private JTextField exampleView;
     private JTextArea matcherView;
     private DefaultListModel<String> examples;
-    private JList<String> examplesView;
+    private JList<String> examplesList;
     private Highlighter highlighter;
     private Main main;
+    private Font font;
 
     public UserInterface(Main main){
-        JFrame frame = new JFrame();
+
+        frame = new JFrame();
         this.main = main;
+        font = new Font("Arial",Font.BOLD,16);
+
 
         frame.add(buildStatusBar(),BorderLayout.PAGE_END);
         frame.add(buildCentralPanel(),BorderLayout.CENTER);
-        frame.add(buildSidePanel(),BorderLayout.EAST);
+        //frame.add(buildSidePanel(),BorderLayout.EAST);
 
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setSize(600,300);
+        frame.setSize(900,500);
+        frame.setTitle("Basic Regular Expression Visualizer");
         frame.setVisible(true);
     }
 
     public JPanel buildCentralPanel(){
         JPanel panel = new JPanel(new BorderLayout());
 
-        inputRegex = new JTextField();
+        inputRegex = new JTextField("Insert regular expresion");
+        inputRegex.setFont(font);
         inputRegex.getDocument().addDocumentListener(new TextListener());
 
         panel.add(inputRegex, BorderLayout.NORTH);
@@ -53,39 +59,56 @@ public class UserInterface {
         return panel;
     }
 
-    public JPanel buildAnalyzerDisplay(){
+    public JScrollPane buildAnalyzerDisplay(){
         JPanel panel = new JPanel(new GridLayout(2,1));
-
+        Font font = new Font("Arial",Font.BOLD,34);
         regexView = new JTextField();
+        regexView.setFont(font);
+        regexView.setForeground(Color.BLACK);
+        regexView.setEditable(false);
         exampleView = new JTextField();
+        exampleView.setFont(font);
+        exampleView.setForeground(Color.BLACK);
+        exampleView.setEditable(false);
 
         panel.add(regexView);
         panel.add(exampleView);
-
-        return panel;
+        JScrollPane scrollPane = new JScrollPane(panel);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        return scrollPane;
     }
 
     public JSplitPane buildMatcherDisplay(){
         matcherView = new JTextArea();
+        matcherView.getDocument().addDocumentListener(new TextListener());
+        matcherView.setFont(font);
         highlighter = matcherView.getHighlighter();
         matcherView.setWrapStyleWord(true);
         matcherView.setLineWrap(true);
         examples = new DefaultListModel<String>();
-        examplesView = new JList<String>(examples);
-        examplesView.addMouseListener(new MouseAdapter() {
+        examplesList = new JList<String>(examples);
+        examplesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        examplesList.setLayoutOrientation(JList.VERTICAL);
+        examplesList.setVisibleRowCount(-1);
+        examplesList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                main.analyze(examplesView.getSelectedValue());
+                main.analyze(examplesList.getSelectedValue());
+                frame.revalidate();
+                frame.repaint();
             }
         });
         JScrollPane matchScroll = new JScrollPane(matcherView);
         matchScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-        JScrollPane splitScroll = new JScrollPane(examplesView);
+        matchScroll.setPreferredSize(new Dimension(250,150));
+        JScrollPane splitScroll = new JScrollPane(examplesList);
         splitScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        splitScroll.setPreferredSize(new Dimension(150,70));
 
         JSplitPane pane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,matchScroll,splitScroll);
-        pane.setResizeWeight(0.5);
+        pane.setResizeWeight(1);
         return pane;
     }
 
@@ -115,34 +138,32 @@ public class UserInterface {
     }
 
     public void highlightMatchedText(ArrayList<String> toHighlight){
-        for(int i = 0; i < toHighlight.size(); i++){
-        int[] temp = Extractor.arrayStringToInt(toHighlight.get(i).split(","));
-            try{
+        for (String aToHighlight : toHighlight) {
+            int[] temp = Extractor.arrayStringToInt(aToHighlight.split(","));
+            try {
                 highlighter.addHighlight(temp[0], temp[1], getPainter());
-            }catch (BadLocationException ex){
+            } catch (BadLocationException ex) {
                 ex.printStackTrace();
             }
         }
     }
 
     public void highlightAnalyzedElements(String[] indices){
-        int[] splittedPattern = Extractor.arrayStringToInt(indices[0].split(","));
+        int[] slicedPattern = Extractor.arrayStringToInt(indices[0].split(","));
         Highlighter forPattern = regexView.getHighlighter();
-        int[] splittedExample = Extractor.arrayStringToInt(indices[1].split(","));
+        int[] slicedExample = Extractor.arrayStringToInt(indices[1].split(","));
         Highlighter forExample = exampleView.getHighlighter();
         Highlighter.HighlightPainter pointer;
 
-        for(int i = splittedPattern.length-1; i >= 0; i--){
+        for(int i = slicedPattern.length-1; i >= 0; i--){
             pointer = getPainter();
             try{
-            forPattern.addHighlight(0,splittedPattern[i],pointer);
-            forExample.addHighlight(0,splittedExample[i],pointer);
+            forPattern.addHighlight(0,slicedPattern[i],pointer);
+            forExample.addHighlight(0,slicedExample[i],pointer);
             }catch (BadLocationException ex){
                 ex.printStackTrace();
             }
-
         }
-
     }
 
     public void updateAnalyzer(String regex,String example){
@@ -150,15 +171,20 @@ public class UserInterface {
         exampleView.setText(example);
     }
 
-    public void addExamples(){
+    public void updateExamples(){
         for(Highlighter.Highlight light : highlighter.getHighlights()){
             examples.addElement(matcherView.getText().substring(light.getStartOffset(), light.getEndOffset()));
         }
     }
 
     public static Highlighter.HighlightPainter getPainter(){
-            Random r = new Random();
-            return new DefaultHighlighter.DefaultHighlightPainter(new Color(r.nextFloat(),r.nextFloat(),r.nextFloat()));
+        Random random = new Random();
+        int mod = 76;
+        int red = random.nextInt(256-mod)+mod;
+        int green = random.nextInt(256-mod)+mod;
+        int blue = random.nextInt(256-mod)+mod;
+
+        return new DefaultHighlighter.DefaultHighlightPainter(new Color(red,green,blue));
     }
 
     public void resetView(){

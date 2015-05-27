@@ -28,7 +28,8 @@ public class Main {
         }
 
         userInterface.highlightMatchedText(matched);
-        userInterface.addExamples();
+        userInterface.updateExamples();
+        userInterface.updateStatus("");
     }
 
     public void analyze(String example){
@@ -36,6 +37,11 @@ public class Main {
         userInterface.updateAnalyzer(regex,example);
 
         String[] analyzed = extractor.analyze(regex,example);
+
+        if(analyzed[0]==null){
+            userInterface.updateStatus("Example not found");
+            return;
+        }
         userInterface.highlightAnalyzedElements(analyzed);
     }
 
