@@ -12,7 +12,7 @@ public class Extractor{
 
     public List<String> search(String regex, String input){
         List<String> startAndEndIndices = new ArrayList<String>();
-        String indices = "";
+        String indices;
         if(regex.equals("")) return startAndEndIndices;
 
         try{
@@ -22,7 +22,6 @@ public class Extractor{
             while(true){
                 if(matcher.find()){
                     indices = matcher.start() + "," + matcher.end();
-                    System.out.println(indices);
                     startAndEndIndices.add(indices);
                 }else{
                     return startAndEndIndices;
@@ -35,7 +34,12 @@ public class Extractor{
         return startAndEndIndices;
     }
 
-    public String[] analyze(String regex, String analyzed){
+    public String[] split(String regex, String input){
+        pattern = Pattern.compile(regex);
+        return pattern.split(input);
+    }
+
+    public static String[] analyze(String regex, String analyzed){
         String[] patternAndInputInParts = new String[2];
         StringBuilder patternParts = new StringBuilder();
         StringBuilder inputParts = new StringBuilder();
