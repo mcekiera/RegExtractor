@@ -28,7 +28,7 @@ public class Extractor{
             }
 
         }catch (PatternSyntaxException ex){
-            ex.printStackTrace();
+            //ex.printStackTrace();
         }
         return startAndEndIndices;
     }
@@ -38,7 +38,7 @@ public class Extractor{
         StringBuilder patternParts = new StringBuilder();
         StringBuilder inputParts = new StringBuilder();
 
-        if(regex.equals("")) return patternAndInputInParts;
+        if(regex.equals("") || analyzed.equals("")) return patternAndInputInParts;
 
         for(int i = regex.length(); i >= 0 ; i--){
             try{

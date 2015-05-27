@@ -22,6 +22,11 @@ public class Main {
 
         ArrayList<String> matched = (ArrayList<String>)extractor.search(regex,text);
 
+        if (matched.isEmpty()){
+            userInterface.updateStatus("Match not found");
+            return;
+        }
+
         userInterface.highlightMatchedText(matched);
         userInterface.addExamples();
     }

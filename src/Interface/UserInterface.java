@@ -6,12 +6,12 @@ import Model.Extractor;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -72,9 +72,10 @@ public class UserInterface {
         matcherView.setLineWrap(true);
         examples = new DefaultListModel<String>();
         examplesView = new JList<String>(examples);
-        examplesView.addListSelectionListener(new ListSelectionListener() {
+        examplesView.addMouseListener(new MouseAdapter() {
             @Override
-            public void valueChanged(ListSelectionEvent e) {
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
                 main.analyze(examplesView.getSelectedValue());
             }
         });
@@ -125,17 +126,17 @@ public class UserInterface {
     }
 
     public void highlightAnalyzedElements(String[] indices){
-        String[] splittedPattern = indices[0].split(",");
+        int[] splittedPattern = Extractor.arrayStringToInt(indices[0].split(","));
         Highlighter forPattern = regexView.getHighlighter();
-        String[] splittedExample = indices[1].split(",");
+        int[] splittedExample = Extractor.arrayStringToInt(indices[1].split(","));
         Highlighter forExample = exampleView.getHighlighter();
         Highlighter.HighlightPainter pointer;
 
         for(int i = splittedPattern.length-1; i >= 0; i--){
             pointer = getPainter();
             try{
-            forPattern.addHighlight(0,Integer.parseInt(splittedPattern[i]),pointer);
-            forExample.addHighlight(0,Integer.parseInt(splittedExample[i]),pointer);
+            forPattern.addHighlight(0,splittedPattern[i],pointer);
+            forExample.addHighlight(0,splittedExample[i],pointer);
             }catch (BadLocationException ex){
                 ex.printStackTrace();
             }
