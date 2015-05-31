@@ -2,12 +2,15 @@ package Control;
 
 
 import Interface.UserInterface;
+import Model.Analyzer;
 import Model.Extractor;
 
 import java.util.ArrayList;
+import java.util.TreeMap;
 
 public class Main {
     Extractor extractor;
+    Analyzer analyzer;
     UserInterface userInterface;
 
     Main(){
@@ -36,12 +39,15 @@ public class Main {
         String regex = userInterface.getRegEx();
         userInterface.updateAnalyzer(regex,example);
 
-        String[] analyzed = extractor.analyze(regex,example);
-
-        if(analyzed[0]==null){
+        if(example == null){
             userInterface.updateStatus("Example not found");
             return;
         }
+
+        analyzer = new Analyzer(regex,example);
+        TreeMap analyzed = analyzer.analyze();
+
+
         userInterface.highlightAnalyzedElements(analyzed);
     }
 

@@ -14,6 +14,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.TreeMap;
 
 public class UserInterface {
     private JFrame frame;
@@ -25,6 +26,8 @@ public class UserInterface {
     private DefaultListModel<String> examples;
     private JList<String> examplesList;
     private Highlighter highlighter;
+    private Highlighter forPattern;
+    private Highlighter forExample;
     private Main main;
     private Font font;
 
@@ -37,18 +40,17 @@ public class UserInterface {
 
         frame.add(buildStatusBar(),BorderLayout.PAGE_END);
         frame.add(buildCentralPanel(),BorderLayout.CENTER);
-        //frame.add(buildSidePanel(),BorderLayout.EAST);
 
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setSize(900,500);
-        frame.setTitle("Basic Regular Expression Visualizer");
+        frame.setTitle("Basic Java Regular Expression Visualizer");
         frame.setVisible(true);
     }
 
     public JPanel buildCentralPanel(){
         JPanel panel = new JPanel(new BorderLayout());
 
-        inputRegex = new JTextField("Insert regular expresion");
+        inputRegex = new JTextField();
         inputRegex.setFont(font);
         inputRegex.getDocument().addDocumentListener(new TextListener());
 
@@ -63,10 +65,12 @@ public class UserInterface {
         JPanel panel = new JPanel(new GridLayout(2,1));
         Font font = new Font("Arial",Font.BOLD,34);
         regexView = new JTextField();
+        forPattern = regexView.getHighlighter();
         regexView.setFont(font);
         regexView.setForeground(Color.BLACK);
         regexView.setEditable(false);
         exampleView = new JTextField();
+        forExample = exampleView.getHighlighter();
         exampleView.setFont(font);
         exampleView.setForeground(Color.BLACK);
         exampleView.setEditable(false);
@@ -112,13 +116,6 @@ public class UserInterface {
         return pane;
     }
 
-    public JPanel buildSidePanel(){
-        JPanel panel = new JPanel();
-        JTextArea area = new JTextArea(15,15);
-        panel.add(area);
-        return panel;
-    }
-
     public JTextField buildStatusBar(){
         statusBar = new JTextField();
         statusBar.setEnabled(false);
@@ -148,22 +145,21 @@ public class UserInterface {
         }
     }
 
-    public void highlightAnalyzedElements(String[] indices){
-        int[] slicedPattern = Extractor.arrayStringToInt(indices[0].split(","));
-        Highlighter forPattern = regexView.getHighlighter();
-        int[] slicedExample = Extractor.arrayStringToInt(indices[1].split(","));
-        Highlighter forExample = exampleView.getHighlighter();
+    public void highlightAnalyzedElements(TreeMap<Integer, Integer> elements){
+        int r = 0;
         Highlighter.HighlightPainter pointer;
-
-        for(int i = slicedPattern.length-1; i >= 0; i--){
+        for(int i : elements.keySet()){
             pointer = getPainter();
             try{
-            forPattern.addHighlight(0,slicedPattern[i],pointer);
-            forExample.addHighlight(0,slicedExample[i],pointer);
+                forExample.addHighlight(elements.get(r),elements.get(i),pointer);
+                forPattern.addHighlight(r,i,pointer);
             }catch (BadLocationException ex){
+                System.out.println(ex.toString() + "BadLocationException is expected" + ex.getCause());
                 ex.printStackTrace();
             }
+            r = i;
         }
+
     }
 
     public void updateAnalyzer(String regex,String example){
@@ -212,4 +208,5 @@ public class UserInterface {
             main.updateView();
         }
     }
+
 }
