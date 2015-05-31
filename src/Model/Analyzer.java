@@ -35,15 +35,15 @@ public class Analyzer{
         TreeMap<Integer, Integer> divided = new TreeMap<Integer, Integer>();
 
         for(int i = 0; i <= regex.length() ; i++){    // int i decide about length of substring
-            try{
-                pattern = Pattern.compile(regex.substring(0,i));
+            try{                                                       //try-catch block is kept inside of method, to ensure
+                pattern = Extractor.getPattern(regex.substring(0,i),Extractor.getOption());       //that it will continue to work even if exception is thrown
                 matcher = pattern.matcher(example);
                 matcher.find();
                 divided.put(i, matcher.end());
-            }catch (PatternSyntaxException ex){       //try-catch block is kept inside of method, to ensure
-                //ex.printStackTrace();               //that it will continue to work even if exception is thrown
+            }catch (PatternSyntaxException ex){
+                exceptionMessage(ex);
             }catch (IllegalStateException ex){
-                //ex.printStackTrace();
+                exceptionMessage(ex);
             }
         }
         divided = checkForEndOfALina(divided);
@@ -83,7 +83,7 @@ public class Analyzer{
         for(int i = regex.length(); i >= 0 ; i--){    // int i decide about length of substring
             try{
 
-                pattern = Pattern.compile(regex.substring(i,regex.length()));
+                pattern = Extractor.getPattern(regex.substring(i,regex.length()),Extractor.getOption());
                 matcher = pattern.matcher(example);
                 matcher.find();
                 if(matcher.start() != 0 && matcher.start() != example.length()){
@@ -91,9 +91,9 @@ public class Analyzer{
                 }
 
             }catch (PatternSyntaxException ex){
-                //ex.printStackTrace();
+                exceptionMessage(ex);
             }catch (IllegalStateException ex){
-                //ex.printStackTrace();
+                exceptionMessage(ex);
             }
         }
         return regex.length();
@@ -110,5 +110,9 @@ public class Analyzer{
             toCheck.remove(1,0);
         }
         return toCheck;
+    }
+
+    public static void exceptionMessage(Exception ex){
+        System.out.println(ex.getClass() + " is expected as part of program flow");
     }
 }

@@ -4,8 +4,11 @@ package Control;
 import Interface.UserInterface;
 import Model.Analyzer;
 import Model.Extractor;
+import Model.Options;
 
-import java.util.ArrayList;
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.TreeMap;
 
 public class Main {
@@ -23,7 +26,7 @@ public class Main {
         String regex = userInterface.getRegEx();
         String text = userInterface.getTextForMatching();
 
-        ArrayList<String> matched = (ArrayList<String>)extractor.search(regex,text);
+        TreeMap<Integer,Integer> matched = extractor.search(regex,text);
 
         if (matched.isEmpty()){
             userInterface.updateStatus("Match not found");
@@ -49,6 +52,21 @@ public class Main {
 
 
         userInterface.highlightAnalyzedElements(analyzed);
+    }
+
+    public PatternOptions getAction(){
+        return new PatternOptions();
+    }
+
+    class PatternOptions implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JComboBox<Options> temp = (JComboBox<Options>)(e.getSource());
+            extractor.setOptions((Options)temp.getSelectedItem());
+            updateView();
+
+        }
     }
 
 }

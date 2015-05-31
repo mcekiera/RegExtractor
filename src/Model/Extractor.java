@@ -1,38 +1,33 @@
 package Model;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 public class Extractor{
-    private static Pattern pattern;
-    private static Matcher matcher;
-    private Options options = Options.NULL;
+    private Pattern pattern;
+    private Matcher matcher;
+    private static Options options = Options.NULL;
 
-    public List<String> search(String regex, String input){
-        List<String> startAndEndIndices = new ArrayList<String>();
-        String indices;
-        if(regex.equals("")) return startAndEndIndices;
+    public TreeMap<Integer,Integer> search(String regex, String input){
+        TreeMap<Integer,Integer> indices = new TreeMap<Integer,Integer>();
+
+        if(regex.equals("")) return indices;
 
         try{
             pattern = getPattern(regex,options);
             matcher = pattern.matcher(input);
 
-            while(true){
-                if(matcher.find()){
-                    indices = matcher.start() + "," + matcher.end();
-                    startAndEndIndices.add(indices);
-                }else{
-                    return startAndEndIndices;
-                }
+            while(matcher.find()){
+                    indices.put(matcher.start(),matcher.end());
             }
 
         }catch (PatternSyntaxException ex){
-            //ex.printStackTrace();
+            Analyzer.exceptionMessage(ex);
         }
-        return startAndEndIndices;
+        return indices;
     }
 
     public String[] split(String regex, String input){
@@ -55,7 +50,7 @@ public class Extractor{
         return converted;
     }
 
-    public Pattern getPattern(String regex, Options option){
+    public static Pattern getPattern(String regex, Options option){
         int[] list = {Pattern.COMMENTS};
         switch (option){
             case CASE_INSENSITIVE:
@@ -79,6 +74,10 @@ public class Extractor{
             default:
                 return Pattern.compile(regex);
         }
+    }
+
+    public static Options getOption(){
+        return options;
     }
 
     public void setOptions(Options options){

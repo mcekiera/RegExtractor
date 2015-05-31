@@ -1,7 +1,7 @@
 package Interface;
 
 import Control.Main;
-import Model.Extractor;
+import Model.Options;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -12,7 +12,6 @@ import javax.swing.text.Highlighter;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.Random;
 import java.util.TreeMap;
 
@@ -40,7 +39,7 @@ public class UserInterface {
 
         frame.add(buildStatusBar(),BorderLayout.PAGE_END);
         frame.add(buildCentralPanel(),BorderLayout.CENTER);
-
+        frame.add(buildSidePanel(),BorderLayout.EAST);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setSize(900,500);
         frame.setTitle("Basic Java Regular Expression Visualizer");
@@ -122,6 +121,15 @@ public class UserInterface {
         return statusBar;
     }
 
+    public JPanel buildSidePanel(){
+        JPanel panel = new JPanel();
+
+        JComboBox<Options> combo = new JComboBox<Options>(Options.values());
+        combo.addActionListener(main.getAction());
+        panel.add(combo);
+        return panel;
+    }
+
     public void updateStatus(String message){
         statusBar.setText(message);
     }
@@ -134,11 +142,10 @@ public class UserInterface {
         return matcherView.getText();
     }
 
-    public void highlightMatchedText(ArrayList<String> toHighlight){
-        for (String aToHighlight : toHighlight) {
-            int[] temp = Extractor.arrayStringToInt(aToHighlight.split(","));
+    public void highlightMatchedText(TreeMap<Integer,Integer> toHighlight){
+        for (int index : toHighlight.keySet()) {
             try {
-                highlighter.addHighlight(temp[0], temp[1], getPainter());
+                highlighter.addHighlight(index, toHighlight.get(index), getPainter());
             } catch (BadLocationException ex) {
                 ex.printStackTrace();
             }
