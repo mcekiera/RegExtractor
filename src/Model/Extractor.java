@@ -57,20 +57,6 @@ public class Extractor{
                 return Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
             case MULTILINE:
                 return Pattern.compile(regex, Pattern.MULTILINE);
-            case COMMENTS:
-                return Pattern.compile(regex, Pattern.COMMENTS);
-            case UNICODE_CASE:
-                return Pattern.compile(regex, Pattern.UNICODE_CASE);
-            case UNICODE_CHARACTER_CLASS:
-                return Pattern.compile(regex, Pattern.UNICODE_CHARACTER_CLASS);
-            case UNIX_LINES:
-                return Pattern.compile(regex, Pattern.UNIX_LINES);
-            case CANON_EQ:
-                return Pattern.compile(regex, Pattern.CANON_EQ);
-            case DOTALL:
-                return Pattern.compile(regex, Pattern.DOTALL);
-            case LITERAL:
-                return Pattern.compile(regex, Pattern.LITERAL);
             default:
                 return Pattern.compile(regex);
         }

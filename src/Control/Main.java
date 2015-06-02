@@ -22,7 +22,7 @@ public class Main {
         userInterface = new UserInterface(this);
     }
 
-    public void updateView(){
+    public void updateMatchView(){
         String regex = userInterface.getRegEx();
         String text = userInterface.getTextForMatching();
 
@@ -33,6 +33,7 @@ public class Main {
             return;
         }
 
+        userInterface.updateSplitTab(extractor.split(regex,text));
         userInterface.highlightMatchedText(matched);
         userInterface.updateExamples();
         userInterface.updateStatus("");
@@ -64,7 +65,7 @@ public class Main {
         public void actionPerformed(ActionEvent e) {
             JComboBox<Options> temp = (JComboBox<Options>)(e.getSource());
             extractor.setOptions((Options)temp.getSelectedItem());
-            updateView();
+            updateMatchView();
 
         }
     }
