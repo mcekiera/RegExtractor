@@ -30,14 +30,14 @@ public class Main {
     public void updateMatchView(){
         String regex = userInterface.getRegEx();
         String text = userInterface.getTextForMatching();
+        TreeMap<Integer,Integer> matched = extractor.search(regex,text);
+        if (matched.isEmpty()){
+            userInterface.updateStatus("Match not found");
+            return;
+        }
+        userInterface.highlightMatchedText(matched);
         switch (tabs){
             case MATCH:
-                TreeMap<Integer,Integer> matched = extractor.search(regex,text);
-                if (matched.isEmpty()){
-                    userInterface.updateStatus("Match not found");
-                    return;
-                }
-                userInterface.highlightMatchedText(matched);
                 userInterface.updateExamples();
                 break;
             case SPLIT:

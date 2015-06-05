@@ -9,20 +9,36 @@ public class Explanation {
     Pattern pattern;
     Matcher matcher;
     HashMap<String, String> description;
+    private static String intend;
 
     public Explanation(){
         description = loadElements();
-
+        intend = "";
     }
 
     public String explain(String regex){
         StringBuilder builder = new StringBuilder();
-        for(char at : regex.toCharArray()){
-            if(at=='\\'){
-                builder.append(at + "   -   " + description.get(Character.toString(at)) + "\n");
+        for(int i = 0; i < regex.length(); i++){
+            String part = regex.substring(i,i+1);
+            //escepe
+            if(part.equals("\\")){
+                if(description.containsKey(regex.substring(i,i+2))){
+                    builder.append(intend + regex.substring(i,i+2) + "  -  " + description.get(regex.substring(i,i+2))+ "\n");
+                }else{
+                    builder.append(intend + regex.substring(i,i+2) + "  -  " + description.get(part) +
+                            "  " + regex.substring(i+1,i+2) + " (" + description.get(regex.substring(i+1,i+2)) + ")\n");
+                }
+                i++;
+                //parantesies
+            }else{
+                if(part.equals("]") || part.equals(")") || part.equals("}")){
+                    intend = intend.substring(0,intend.length()-8);
+                }
+                builder.append(intend + part + "  -  " + description.get(part)+ "\n");
+                if(part.equals("[") || part.equals("(") || part.equals("{")){
+                    intend += "        ";
+                }
             }
-            System.out.println(at);
-            builder.append(at + "   -   " + description.get(Character.toString(at)) + "\n");
         }
 
         return builder.toString();
@@ -37,7 +53,7 @@ public class Explanation {
             BufferedReader reader = new BufferedReader(new FileReader(file));
             while((line = reader.readLine()) != null){
                 String[] temp = line.split("    ");
-
+                System.out.println(i++);
                 elements.put(temp[0],temp[1]);
             }
 
