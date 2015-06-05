@@ -30,14 +30,22 @@ public class Explanation {
                 }
                 i++;
                 //parantesies
-            }else{
-                if(part.equals("]") || part.equals(")") || part.equals("}")){
-                    intend = intend.substring(0,intend.length()-8);
-                }
+            }else if(part.equals("]") || part.equals(")") || part.equals("}")){
+                intend = intend.substring(0,intend.length()-8);
                 builder.append(intend + part + "  -  " + description.get(part)+ "\n");
-                if(part.equals("[") || part.equals("(") || part.equals("{")){
-                    intend += "        ";
+
+            }else if(part.equals("[") || part.equals("(") || part.equals("{")){
+                builder.append(intend + part + "  -  " + description.get(part)+ "\n");
+                intend += "        ";
+
+            }else if(part.equals("^")){
+                if(i==0){
+                    builder.append(intend + part + "  -  " + description.get(part).split("\\.")[0]+ "\n");
+                }else{
+                    builder.append(intend + part + "  -  " + description.get(part).split("\\.")[1]+ "\n");
                 }
+            }else{
+                builder.append(intend + part + "  -  " + description.get(part)+ "\n");
             }
         }
 

@@ -1,5 +1,5 @@
 .    Any character
-^    The beginning of a line
+^    The beginning of a line. Negation
 $    The end of a line
 ?    Once or not at all
 *    Zero or more times
