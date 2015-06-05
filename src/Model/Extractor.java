@@ -1,6 +1,5 @@
 package Model;
 
-import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,27 +30,15 @@ public class Extractor{
     }
 
     public String[] split(String regex, String input){
-        pattern = Pattern.compile(regex);
+        try{
+            pattern = Pattern.compile(regex);
+        }catch (PatternSyntaxException ex){
+            Analyzer.exceptionMessage(ex);
+        }
         return pattern.split(input);
     }
 
-
-    public static int[] arrayStringToInt(String[] toConvert){
-        ArrayList<Integer> temp = new ArrayList<Integer>();
-        for (String part : toConvert){
-            temp.add(Integer.parseInt(part));
-        }
-        int[] converted = new int[temp.size()];
-        int index = 0;
-        for (int element : temp){
-            converted[index] = element;
-            index++;
-        }
-        return converted;
-    }
-
     public static Pattern getPattern(String regex, Options option){
-        int[] list = {Pattern.COMMENTS};
         switch (option){
             case CASE_INSENSITIVE:
                 return Pattern.compile(regex, Pattern.CASE_INSENSITIVE);

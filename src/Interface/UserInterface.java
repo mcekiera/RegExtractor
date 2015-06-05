@@ -4,6 +4,8 @@ import Control.Main;
 import Model.Options;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -12,6 +14,7 @@ import javax.swing.text.Highlighter;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.TreeMap;
 
@@ -32,6 +35,7 @@ public class UserInterface {
     JTextArea textToSplit;
     JTextArea splittedText;
     JTabbedPane tab;
+    JTextArea explain;
 
     public UserInterface(Main main){
 
@@ -41,6 +45,7 @@ public class UserInterface {
 
         inputRegex = new JTextField();
         inputRegex.setFont(font);
+        inputRegex.setText("");
         inputRegex.getDocument().addDocumentListener(new TextListener());
 
         frame.add(inputRegex, BorderLayout.NORTH);
@@ -58,25 +63,39 @@ public class UserInterface {
     public JTabbedPane buildTabPanel(){
 
         tab = new JTabbedPane();
+
         tab.addTab("Analyze", buildAnalyzerDisplay());
         tab.addTab("Split", buildSplitPanel());
         tab.addTab("Explain", buildExplainPanel());
+        tab.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if(tab.getSelectedIndex()==0){
+                    main.setTabs(Tabs.MATCH);
+                }else if(tab.getSelectedIndex()==1){
+                    main.setTabs(Tabs.SPLIT);
+                }else if(tab.getSelectedIndex()==2){
+                    main.setTabs(Tabs.DESCRIBE);
+                }
+                main.updateMatchView();
+            }
+        });
 
         return tab;
     }
 
     public JScrollPane buildSplitPanel(){
         splittedText = new JTextArea();
-        JScrollPane splitScroll = new JScrollPane(splittedText);
-
-        return splitScroll;
+        splittedText.setWrapStyleWord(true);
+        splittedText.setLineWrap(true);
+        splittedText.setEditable(false);
+        return new JScrollPane(splittedText);
 
     }
 
     public JScrollPane buildExplainPanel(){
-        JTextArea area = new JTextArea();
-        JScrollPane scrollPane = new JScrollPane(area);
-        return scrollPane;
+        explain = new JTextArea();
+        return new JScrollPane(explain);
     }
 
     public JPanel buildAnalyzerDisplay(){
@@ -116,12 +135,14 @@ public class UserInterface {
 
         panel.add(regexView);
         panel.add(exampleView);
+        JScrollPane analysis = new JScrollPane(panel);
+        analysis.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         JScrollPane exampleScroll = new JScrollPane(examplesList);
         exampleScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         exampleScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 
         all.add(exampleScroll);
-        all.add(panel);
+        all.add(analysis);
         return all;
     }
 
@@ -184,10 +205,15 @@ public class UserInterface {
         }
     }
 
+    public void diplayExplanation(String description){
+         explain.setText(description);
+    }
+
     public void updateSplitTab(String[] parts){
-        for(String part : parts){
-            splittedText.append(part + "\n");
-        }
+        splittedText.setText(Arrays.toString(parts));
+        //for(String part : parts){
+        //    splittedText.append(part + "\n");
+        //}
     }
 
     public void highlightAnalyzedElements(TreeMap<Integer, Integer> elements){

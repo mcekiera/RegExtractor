@@ -1,8 +1,10 @@
 package Control;
 
 
+import Interface.Tabs;
 import Interface.UserInterface;
 import Model.Analyzer;
+import Model.Explanation;
 import Model.Extractor;
 import Model.Options;
 
@@ -15,27 +17,37 @@ public class Main {
     Extractor extractor;
     Analyzer analyzer;
     UserInterface userInterface;
+    Explanation explanation;
+    Tabs tabs;
 
     Main(){
-
         extractor = new Extractor();
         userInterface = new UserInterface(this);
+        explanation = new Explanation();
+        tabs = Tabs.MATCH;
     }
 
     public void updateMatchView(){
         String regex = userInterface.getRegEx();
         String text = userInterface.getTextForMatching();
-
-        TreeMap<Integer,Integer> matched = extractor.search(regex,text);
-
-        if (matched.isEmpty()){
-            userInterface.updateStatus("Match not found");
-            return;
+        switch (tabs){
+            case MATCH:
+                TreeMap<Integer,Integer> matched = extractor.search(regex,text);
+                if (matched.isEmpty()){
+                    userInterface.updateStatus("Match not found");
+                    return;
+                }
+                userInterface.highlightMatchedText(matched);
+                userInterface.updateExamples();
+                break;
+            case SPLIT:
+                userInterface.updateSplitTab(extractor.split(regex,text));
+                break;
+            case DESCRIBE:
+                userInterface.diplayExplanation(explanation.explain(regex));
+                break;
         }
 
-        userInterface.updateSplitTab(extractor.split(regex,text));
-        userInterface.highlightMatchedText(matched);
-        userInterface.updateExamples();
         userInterface.updateStatus("");
     }
 
@@ -68,6 +80,10 @@ public class Main {
             updateMatchView();
 
         }
+    }
+
+    public void setTabs(Tabs tab){
+        tabs = tab;
     }
 
 }
