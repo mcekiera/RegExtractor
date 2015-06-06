@@ -49,6 +49,7 @@ public class Main {
         }
 
         userInterface.updateStatus("");
+        explanation.resetIndentation();
     }
 
     public void analyze(String example){

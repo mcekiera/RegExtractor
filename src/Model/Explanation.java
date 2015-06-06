@@ -9,11 +9,11 @@ public class Explanation {
     Pattern pattern;
     Matcher matcher;
     HashMap<String, String> description;
-    private static String intend;
+    private static String indent;
 
     public Explanation(){
         description = loadElements();
-        intend = "";
+        indent = "";
     }
 
     public String explain(String regex){
@@ -23,29 +23,59 @@ public class Explanation {
             //escepe
             if(part.equals("\\")){
                 if(description.containsKey(regex.substring(i,i+2))){
-                    builder.append(intend + regex.substring(i,i+2) + "  -  " + description.get(regex.substring(i,i+2))+ "\n");
+                    builder.append(indent + regex.substring(i,i+2) + "  -  " + description.get(regex.substring(i,i+2))+ "\n");
                 }else{
-                    builder.append(intend + regex.substring(i,i+2) + "  -  " + description.get(part) +
+                    builder.append(indent + regex.substring(i,i+2) + "  -  " + description.get(part) +
                             "  " + regex.substring(i+1,i+2) + " (" + description.get(regex.substring(i+1,i+2)) + ")\n");
                 }
                 i++;
                 //parantesies
             }else if(part.equals("]") || part.equals(")") || part.equals("}")){
-                intend = intend.substring(0,intend.length()-8);
-                builder.append(intend + part + "  -  " + description.get(part)+ "\n");
+                indent = indent.substring(0, indent.length()-8);
+                builder.append(indent + part + "  -  " + description.get(part)+ "\n");
 
             }else if(part.equals("[") || part.equals("(") || part.equals("{")){
-                builder.append(intend + part + "  -  " + description.get(part)+ "\n");
-                intend += "        ";
+                builder.append(indent + part + "  -  " + description.get(part)+ "\n");
+                indent += "        ";
+                if(part.equals("{")){
+                    String range = regex.substring(i + 1, regex.indexOf("}", i));
+                    if(!range.contains(",")){
+                        builder.append(indent + range + "  -  " + "exactly " + range + " times" + "\n");
+                    }else{
+                        String[] temp = range.split(",");
+                        if(temp.length == 1){
+                            builder.append(indent + range + "  -  " + "at least " + temp[0] + " times" + "\n");
+                        }else{
+                            builder.append(indent + range + "  -  " + "at least " + temp[0] + " but no more than " + temp[1] + " times" + "\n");
+                        }
+
+                    }
+                    i += range.length();
+                }
 
             }else if(part.equals("^")){
                 if(i==0){
-                    builder.append(intend + part + "  -  " + description.get(part).split("\\.")[0]+ "\n");
+                    builder.append(indent + part + "  -  " + description.get(part).split("\\.")[0]+ "\n");
                 }else{
-                    builder.append(intend + part + "  -  " + description.get(part).split("\\.")[1]+ "\n");
+                    builder.append(indent + part + "  -  " + description.get(part).split("\\.")[1]+ "\n");
+                }
+            }else if(part.equals("$")){
+                if(i==regex.length()-1){
+                    builder.append(indent + part + "  -  " + description.get(part).split("\\.")[0]+ "\n");
+                }else{
+                    builder.append(indent + part + "  -  " + description.get(part).split("\\.")[1]+ "\n");
                 }
             }else{
-                builder.append(intend + part + "  -  " + description.get(part)+ "\n");
+                if(description.get(part)!=null){
+                    builder.append(indent + part + "  -  " + description.get(part)+ "\n");
+                }else{
+                    if((Character.isDigit(regex.charAt(i)) || Character.isLetter(regex.charAt(i))) && regex.substring(i+1,i+2).equals("-")){
+                        builder.append(indent + regex.substring(i,i+3) + "  -  " + "range from \"" + part + "\" to \"" + regex.substring(i+2,i+3) + "\"\n");
+                    i += 2;
+                    }else{
+                        builder.append(indent + part + "  -  " + "matching for character: "+ part + "\n");
+                    }
+                }
             }
         }
 
@@ -71,5 +101,9 @@ public class Explanation {
             ex.printStackTrace();
         }
         return elements;
+    }
+
+    public void resetIndentation(){
+        indent = "";
     }
 }

@@ -1,6 +1,6 @@
 .    Any character
 ^    The beginning of a line. Negation
-$    The end of a line
+$    The end of a line. Matching for character: $
 ?    Once or not at all
 *    Zero or more times
 +    One or more times
