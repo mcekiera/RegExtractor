@@ -1,5 +1,5 @@
 .    Any character
-^    The beginning of a line. Negation
+^    The beginning of a line. Negation of next statement
 $    The end of a line. Matching for character: $
 ?    Once or not at all
 *    Zero or more times
@@ -32,3 +32,34 @@ $    The end of a line. Matching for character: $
 ]    end of a range
 (    start of a group
 )    end of a group
+\p{Lower}    A lower-case alphabetic character: [a-z]
+\p{Upper}    An upper-case alphabetic character:[A-Z]
+\p{ASCII}    All ASCII:[\x00-\x7F]
+\p{Alpha}    An alphabetic character:[\p{Lower}\p{Upper}]
+\p{Digit}    A decimal digit: [0-9]
+\p{Alnum}    An alphanumeric character:[\p{Alpha}\p{Digit}]
+\p{Punct}    Punctuation: One of !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
+\p{Graph}    A visible character: [\p{Alnum}\p{Punct}]
+\p{Print}    A printable character: [\p{Graph}\x20]
+\p{Blank}    A space or a tab: [ \t]
+\p{Cntrl}    A control character: [\x00-\x1F\x7F]
+\p{XDigit}    A hexadecimal digit: [0-9a-fA-F]
+\p{Space}    A whitespace character: [ \t\n\x0B\f\r]
+\p{javaLowerCase}    Equivalent to java.lang.Character.isLowerCase()
+\p{javaUpperCase}    Equivalent to java.lang.Character.isUpperCase()
+\p{javaWhitespace}    Equivalent to java.lang.Character.isWhitespace()
+\p{javaMirrored}    Equivalent to java.lang.Character.isMirrored()
+\p{IsLatin}    A Latin script character (script)
+\p{InGreek}    A character in the Greek block (block)
+\p{Lu}    An uppercase letter (category)
+\p{IsAlphabetic}    An alphabetic character (binary property)
+\p{Sc}    A currency symbol
+\P{InGreek}    Any character except one in the Greek block (negation)
+\p{L}     Any letter except an uppercase letter
+\p{N}     Any numeric character
+\p{L}&&[^\p{Lu}]     Any letter except an uppercase letter (subtraction)
+\h    A horizontal whitespace
+\H    A non horizontal whitespace
+\v    A vertical whitespace
+\V    A non vertical whitespace
+\R    Any Unicode linebreak sequence \u000D\u000A|[\u000A\u000B\u000C\u000D\u0085\u2028\u2029]

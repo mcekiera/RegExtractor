@@ -95,6 +95,7 @@ public class UserInterface {
 
     public JScrollPane buildExplainPanel(){
         explain = new JTextArea();
+        explain.setFont(new Font("Arial",Font.BOLD,16));
         return new JScrollPane(explain);
     }
 

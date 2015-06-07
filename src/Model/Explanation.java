@@ -13,17 +13,21 @@ public class Explanation {
 
     public Explanation(){
         description = loadElements();
-        indent = "";
+        indent = "  ";
     }
 
     public String explain(String regex){
         StringBuilder builder = new StringBuilder();
+        int len = regex.length();
         for(int i = 0; i < regex.length(); i++){
             String part = regex.substring(i,i+1);
             //escepe
             if(part.equals("\\")){
                 if(description.containsKey(regex.substring(i,i+2))){
                     builder.append(indent + regex.substring(i,i+2) + "  -  " + description.get(regex.substring(i,i+2))+ "\n");
+                }else if(regex.charAt(i+1) == 'p'){
+                    builder.append(indent + regex.substring(i,regex.indexOf("}",i)+1) + "  -  " + description.get(regex.substring(i,regex.indexOf("}",i)+1))+ "\n");
+                    i+= regex.substring(i,regex.indexOf("}",i)).length()-1;
                 }else{
                     builder.append(indent + regex.substring(i,i+2) + "  -  " + description.get(part) +
                             "  " + regex.substring(i+1,i+2) + " (" + description.get(regex.substring(i+1,i+2)) + ")\n");
@@ -68,8 +72,11 @@ public class Explanation {
             }else{
                 if(description.get(part)!=null){
                     builder.append(indent + part + "  -  " + description.get(part)+ "\n");
+                }else if(part.equals("&") && regex.charAt(i+1) == '&'){
+                    builder.append(indent + "&&" + "  -  " + description.get("&&") + "\n");
+                    i++;
                 }else{
-                    if((Character.isDigit(regex.charAt(i)) || Character.isLetter(regex.charAt(i))) && regex.substring(i+1,i+2).equals("-")){
+                    if(len > i + 2 && (Character.isDigit(regex.charAt(i)) || Character.isLetter(regex.charAt(i))) && regex.substring(i+1,i+2).equals("-")){
                         builder.append(indent + regex.substring(i,i+3) + "  -  " + "range from \"" + part + "\" to \"" + regex.substring(i+2,i+3) + "\"\n");
                     i += 2;
                     }else{
@@ -84,14 +91,13 @@ public class Explanation {
 
     private HashMap<String, String> loadElements(){
         HashMap<String, String> elements = new HashMap<String,String>();
-        File file = new File("C:\\Users\\Pacin\\IdeaProjects\\RegExtractor\\src\\Model\\regex.txt");
+        File file = new File("src\\Model\\regex.txt");
         try{
             int i = 0;
             String line;
             BufferedReader reader = new BufferedReader(new FileReader(file));
             while((line = reader.readLine()) != null){
                 String[] temp = line.split("    ");
-                System.out.println(i++);
                 elements.put(temp[0],temp[1]);
             }
 
@@ -104,6 +110,6 @@ public class Explanation {
     }
 
     public void resetIndentation(){
-        indent = "";
+        indent = "  ";
     }
 }
