@@ -9,6 +9,8 @@ public class Explanation {
     HashMap<String, String> description;
     private static String indent;
     private String[] special = {"\\","p", ")","(","[","]","{","}","^","$","?","&"};
+    public boolean isInsideClass = false;
+    int up;
 
     public Explanation(){
         description = loadElements();
@@ -17,70 +19,25 @@ public class Explanation {
 
     public String explain(String regex){
         expression = regex;
-        String result;
+        String result = "";
         StringBuilder builder = new StringBuilder();
         for(int i = 0; i < regex.length(); i++){
-            String fragment = regex.substring(i,i+1);
-            System.out.println(fragment);
-            //escepe
-            if(isSpecialCase(fragment)){
-                if(fragment.equals("\\")){
-                    if(description.containsKey(regex.substring(i,i+2))){
-                        builder.append(indent + regex.substring(i,i+2) + "  -  " + description.get(regex.substring(i,i+2))+ "\n");
-                    }else if(regex.charAt(i+1) == 'p' || regex.charAt(i+1) == 'P'){
-                        builder.append(indent + regex.substring(i,regex.indexOf("}",i)+1) + "  -  " + description.get(regex.substring(i,regex.indexOf("}",i)+1))+ "\n");
-                        i+= regex.substring(i,regex.indexOf("}",i)).length()-1;
-                    }else{
-                        builder.append(indent + regex.substring(i,i+2) + "  -  " + description.get(fragment) +
-                                "  " + regex.substring(i+1,i+2) + " (" + description.get(regex.substring(i+1,i+2)) + ")\n");
-                    }
-                    i++;
-                    //parantesies
-                }else if(fragment.equals("]") || fragment.equals(")") || fragment.equals("}")){
-                    indent = indent.substring(0, indent.length()-8);
-                    builder.append(indent + fragment + "  -  " + description.get(fragment)+ "\n");
+            up = 0;                                     // if matching character is not special, there is no need to
+            String fragment = regex.substring(i,i+1);   // change int i value, and skip indices of regular expression
 
-                }else if(fragment.equals("[") || fragment.equals("(") || fragment.equals("{")){
-                    builder.append(indent + fragment + "  -  " + description.get(fragment)+ "\n");
-                    indent += "        ";
-                    if(fragment.equals("{")){
-                        String range = regex.substring(i + 1, regex.indexOf("}", i));
-                        if(!range.contains(",")){
-                            builder.append(indent + range + "  -  " + "exactly " + range + " times" + "\n");
-                        }else{
-                            String[] temp = range.split(",");
-                            if(temp.length == 1){
-                                builder.append(indent + range + "  -  " + "at least " + temp[0] + " times" + "\n");
-                            }else{
-                                builder.append(indent + range + "  -  " + "at least " + temp[0] + " but no more than " + temp[1] + " times" + "\n");
-                            }
-
-                        }
-                        i += range.length();
-                    }
-
-                }else if(fragment.equals("^")){
-                    if(i==0){
-                        builder.append(indent + fragment + "  -  " + description.get(fragment).split("\\.")[0]+ "\n");
-                    }else{
-                        builder.append(indent + fragment + "  -  " + description.get(fragment).split("\\.")[1]+ "\n");
-                    }
-                }else if(fragment.equals("$")){
-                    if(i==regex.length()-1){
-                        builder.append(indent + fragment + "  -  " + description.get(fragment).split("\\.")[0]+ "\n");
-                    }else{
-                        builder.append(indent + fragment + "  -  " + description.get(fragment).split("\\.")[1]+ "\n");
-                    }
-                }else if(fragment.equals("&") && regex.charAt(i+1) == '&'){
-                    builder.append(indent + "&&" + "  -  " + description.get("&&") + "\n");
-                    i++;
-                }
+            if(isInsideClass){
+                matchCharacter(fragment);
+            }else if(isSpecialCase(fragment)){
+                result = explainSpecialCase(i);
             }else{
                 result = explainSimpleChar(fragment,i);
-                i += result.split(" ")[0].length()-1;                  //to skip already described chars
-                builder.append(indent + result + "\n");
             }
+
+            i += up;                                   // to skip character already described by specialized methods
+            System.out.println(result.split(" ")[0]);
+            builder.append(result + "\n" + indent);
         }
+
         return builder.toString();
     }
 
@@ -89,71 +46,100 @@ public class Explanation {
             return character + "  -  " + description.get(character);
         }else{
             if(isCharacterClass(i)){
+                up = 2;
                 return expression.substring(i,i+3) + "  -  " + "range from \"" + character + "\" to \""
                         + expression.substring(i+2,i+3) + "\"";
             }else{
-                return character + "  -  " + "matching for character: "+ character;
+                return matchCharacter(character);
             }
         }
     }
 
-    public void separateCases(String character){
-        switch(getMeta(character)){
+    public String explainSpecialCase(int i){
+        String character = expression.substring(i,i+1);
+        switch(Special.getSpecial(character)){
             case ESCAPE_MARK:
-
+                if(description.containsKey(character)){
+                    up = 1;
+                    return expression.substring(i,i+2) + "  -  " + description.get(character);
+                }else if(character.equals('p') || expression.charAt(i+1) == 'P'){
+                    up = expression.substring(i,expression.indexOf("}",i)+1).length();
+                    return expression.substring(i,expression.indexOf("}",i)+1) + "  -  "
+                            + description.get(expression.substring(i,expression.indexOf("}",i)+1));
+                }else{
+                    up = 1;
+                    return expression.substring(i,i+2) + "  -  " + description.get(character) +
+                            "  " + expression.substring(i+1,i+2) + " (" + description.get(expression.substring(i+1,i+2));
+                }
             case BEGINNING_OF_LINE:
-                break;
-            case POSIX:
-                break;
+                matchBeginningOrEnd(i);
+
             case OPEN_PARANTHESIS:
-                break;
-            case CLOSE_PARANTHESIS:
-                break;
             case OPEN_SQUARE_BRACKET:
-                break;
+                indent += "        ";
+                return character + "  -  " + description.get(character);
+
+            case CLOSE_PARANTHESIS:
             case CLOSE_SQUARE_BRACKET:
-                break;
-            case OPEN_CURLY_BRACKET:
-                break;
             case CLOSE_CURLY_BRACKET:
-                break;
+                return closingBracket(character);
+
+            case OPEN_CURLY_BRACKET:
+                indent += "        ";
+                String range = expression.substring(i + 1, expression.indexOf("}", i));
+                if(!range.contains(",")){
+                    up = range.length();
+                    return character + "  -  " + description.get(character) + "\n" + range + "  -  " + "exactly " + range + " times";
+                }else{
+                    String[] temp = range.split(",");
+                    if(temp.length == 1){
+                        up = range.length();
+                        return character + "  -  " + description.get(character) + "\n"+ range + "  -  " + "at least " + temp[0] + " times";
+                    }else{
+                        up = range.length();
+                        return character + "  -  " + description.get(character) + "\n"+ range + "  -  " + "at least " + temp[0] + " but no more than " + temp[1] + " times";
+                    }
+                }
+
             case QUESTION_MARK:
-                break;
+                return "??";
             case END_OF_LINE:
-                break;
+                return matchBeginningOrEnd(i);
             case AND:
-                break;
+                return matchAnd(i);
             default:
-                break;
+                return "!!!!!!!!!!!!!!!!!!!!!";
 
         }
     }
 
 
-
-    public static Special getMeta(String ch){
-        return Special.valueOf(ch);
+    public String matchBeginningOrEnd(int i){
+        String character = expression.substring(i,i+1);
+        int beginningOrEnd = (character.equals("^")) ? 0 : expression.length()-1;  // match for beginning or end of regex
+        if(i==beginningOrEnd){
+            return character + "  -  " + description.get(character).split("\\.")[0];
+        }else{
+            return character + "  -  " + description.get(character).split("\\.")[1];
+        }
     }
 
+    public String matchCharacter(String character){
+        return character + "  -  " + "matching for character: "+ character;
+    }
 
-    private HashMap<String, String> loadElements(){
-        HashMap<String, String> elements = new HashMap<String,String>();
-        File file = new File("src\\Model\\regex.txt");
-        try{
-            int i = 0;
-            String line;
-            BufferedReader reader = new BufferedReader(new FileReader(file));
-            while((line = reader.readLine()) != null){
-                String[] temp = line.split("    ");
-                elements.put(temp[0],temp[1]);
-            }
-
-        }catch (FileNotFoundException ex){
-            ex.printStackTrace();
-        }catch (IOException ex){
-            ex.printStackTrace();
+    public String matchAnd(int index){
+        if(isInBounds(index,2) && expression.charAt(index+1)=='&'){
+            up = 1;
+            return  "&&" + "  -  " + description.get("&&");
+        }else{
+            return matchCharacter("&");
         }
-        return elements;
+    }
+
+    public String closingBracket(String character){
+        indent = indent.substring(0, indent.length()-8);
+        return character + "  -  " + description.get(character);
     }
 
     public void resetIndentation(){
@@ -179,6 +165,26 @@ public class Explanation {
 
     public boolean isInBounds(int index, int expectedLength){
         return expression.length() >= index + expectedLength;
+    }
+
+    private HashMap<String, String> loadElements(){
+        HashMap<String, String> elements = new HashMap<String,String>();
+        File file = new File("src\\Model\\regex.txt");
+        try{
+            int i = 0;
+            String line;
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            while((line = reader.readLine()) != null){
+                String[] temp = line.split("    ");
+                elements.put(temp[0],temp[1]);
+            }
+
+        }catch (FileNotFoundException ex){
+            ex.printStackTrace();
+        }catch (IOException ex){
+            ex.printStackTrace();
+        }
+        return elements;
     }
 
     //todo zostaje tylko podział na greedy, reluctant and possesive quantifires no i refactoring całej metody
