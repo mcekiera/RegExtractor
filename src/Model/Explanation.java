@@ -2,14 +2,14 @@ package Model;
 
 import java.io.*;
 import java.util.HashMap;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Explanation {
     Pattern pattern;
-    Matcher matcher;
+    String expression;
     HashMap<String, String> description;
     private static String indent;
+    private String[] chars = {"\\","p", ")","(","[","]","{","}","^","$","?"};
 
     public Explanation(){
         description = loadElements();
@@ -17,6 +17,7 @@ public class Explanation {
     }
 
     public String explain(String regex){
+        expression = regex;
         StringBuilder builder = new StringBuilder();
         int len = regex.length();
         for(int i = 0; i < regex.length(); i++){
@@ -25,7 +26,7 @@ public class Explanation {
             if(part.equals("\\")){
                 if(description.containsKey(regex.substring(i,i+2))){
                     builder.append(indent + regex.substring(i,i+2) + "  -  " + description.get(regex.substring(i,i+2))+ "\n");
-                }else if(regex.charAt(i+1) == 'p'){
+                }else if(regex.charAt(i+1) == 'p' || regex.charAt(i+1) == 'P'){
                     builder.append(indent + regex.substring(i,regex.indexOf("}",i)+1) + "  -  " + description.get(regex.substring(i,regex.indexOf("}",i)+1))+ "\n");
                     i+= regex.substring(i,regex.indexOf("}",i)).length()-1;
                 }else{
@@ -89,6 +90,42 @@ public class Explanation {
         return builder.toString();
     }
 
+    public void separateCases(String character){
+        String a = "aaa";
+        switch(getMeta(character)){
+            case ESCAPE_MARK:
+                break;
+            case BEGINNING_OF_LINE:
+                break;
+            case POSIX:
+                break;
+            case OPEN_PARANTHESIS:
+                break;
+            case CLOSE_PARANTHESIS:
+                break;
+            case OPEN_SQUARE_BRACKET:
+                break;
+            case CLOSE_SQUARE_BRACKET:
+                break;
+            case OPEN_CURLY_BRACKET:
+                break;
+            case CLOSE_CURLY_BRACKET:
+                break;
+            case QUESTION_MARK:
+                break;
+            case END_OF_LINE:
+                break;
+            default:
+                break;
+
+        }
+    }
+
+    public static Metacharacter getMeta(String ch){
+        return Metacharacter.valueOf(ch);
+    }
+
+
     private HashMap<String, String> loadElements(){
         HashMap<String, String> elements = new HashMap<String,String>();
         File file = new File("src\\Model\\regex.txt");
@@ -112,4 +149,6 @@ public class Explanation {
     public void resetIndentation(){
         indent = "  ";
     }
+
+    //todo zostaje tylko podział na greedy, reluctant and possesive quantifires no i refactoring całej metody
 }
