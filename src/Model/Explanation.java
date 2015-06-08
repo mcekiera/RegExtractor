@@ -3,14 +3,12 @@ package Model;
 import java.io.*;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.regex.Pattern;
 
 public class Explanation {
-    Pattern pattern;
     String expression;
     HashMap<String, String> description;
     private static String indent;
-    private String[] special = {"\\","p", ")","(","[","]","{","}","^","$","?"};
+    private String[] special = {"\\","p", ")","(","[","]","{","}","^","$","?","&"};
 
     public Explanation(){
         description = loadElements();
@@ -19,63 +17,64 @@ public class Explanation {
 
     public String explain(String regex){
         expression = regex;
-        String result = "";
+        String result;
         StringBuilder builder = new StringBuilder();
-        int len = regex.length();
         for(int i = 0; i < regex.length(); i++){
             String fragment = regex.substring(i,i+1);
             System.out.println(fragment);
             //escepe
-            if(fragment.equals("\\")){
-                if(description.containsKey(regex.substring(i,i+2))){
-                    builder.append(indent + regex.substring(i,i+2) + "  -  " + description.get(regex.substring(i,i+2))+ "\n");
-                }else if(regex.charAt(i+1) == 'p' || regex.charAt(i+1) == 'P'){
-                    builder.append(indent + regex.substring(i,regex.indexOf("}",i)+1) + "  -  " + description.get(regex.substring(i,regex.indexOf("}",i)+1))+ "\n");
-                    i+= regex.substring(i,regex.indexOf("}",i)).length()-1;
-                }else{
-                    builder.append(indent + regex.substring(i,i+2) + "  -  " + description.get(fragment) +
-                            "  " + regex.substring(i+1,i+2) + " (" + description.get(regex.substring(i+1,i+2)) + ")\n");
-                }
-                i++;
-                //parantesies
-            }else if(fragment.equals("]") || fragment.equals(")") || fragment.equals("}")){
-                indent = indent.substring(0, indent.length()-8);
-                builder.append(indent + fragment + "  -  " + description.get(fragment)+ "\n");
-
-            }else if(fragment.equals("[") || fragment.equals("(") || fragment.equals("{")){
-                builder.append(indent + fragment + "  -  " + description.get(fragment)+ "\n");
-                indent += "        ";
-                if(fragment.equals("{")){
-                    String range = regex.substring(i + 1, regex.indexOf("}", i));
-                    if(!range.contains(",")){
-                        builder.append(indent + range + "  -  " + "exactly " + range + " times" + "\n");
+            if(isSpecialCase(fragment)){
+                if(fragment.equals("\\")){
+                    if(description.containsKey(regex.substring(i,i+2))){
+                        builder.append(indent + regex.substring(i,i+2) + "  -  " + description.get(regex.substring(i,i+2))+ "\n");
+                    }else if(regex.charAt(i+1) == 'p' || regex.charAt(i+1) == 'P'){
+                        builder.append(indent + regex.substring(i,regex.indexOf("}",i)+1) + "  -  " + description.get(regex.substring(i,regex.indexOf("}",i)+1))+ "\n");
+                        i+= regex.substring(i,regex.indexOf("}",i)).length()-1;
                     }else{
-                        String[] temp = range.split(",");
-                        if(temp.length == 1){
-                            builder.append(indent + range + "  -  " + "at least " + temp[0] + " times" + "\n");
-                        }else{
-                            builder.append(indent + range + "  -  " + "at least " + temp[0] + " but no more than " + temp[1] + " times" + "\n");
-                        }
-
+                        builder.append(indent + regex.substring(i,i+2) + "  -  " + description.get(fragment) +
+                                "  " + regex.substring(i+1,i+2) + " (" + description.get(regex.substring(i+1,i+2)) + ")\n");
                     }
-                    i += range.length();
-                }
+                    i++;
+                    //parantesies
+                }else if(fragment.equals("]") || fragment.equals(")") || fragment.equals("}")){
+                    indent = indent.substring(0, indent.length()-8);
+                    builder.append(indent + fragment + "  -  " + description.get(fragment)+ "\n");
 
-            }else if(fragment.equals("^")){
-                if(i==0){
-                    builder.append(indent + fragment + "  -  " + description.get(fragment).split("\\.")[0]+ "\n");
-                }else{
-                    builder.append(indent + fragment + "  -  " + description.get(fragment).split("\\.")[1]+ "\n");
+                }else if(fragment.equals("[") || fragment.equals("(") || fragment.equals("{")){
+                    builder.append(indent + fragment + "  -  " + description.get(fragment)+ "\n");
+                    indent += "        ";
+                    if(fragment.equals("{")){
+                        String range = regex.substring(i + 1, regex.indexOf("}", i));
+                        if(!range.contains(",")){
+                            builder.append(indent + range + "  -  " + "exactly " + range + " times" + "\n");
+                        }else{
+                            String[] temp = range.split(",");
+                            if(temp.length == 1){
+                                builder.append(indent + range + "  -  " + "at least " + temp[0] + " times" + "\n");
+                            }else{
+                                builder.append(indent + range + "  -  " + "at least " + temp[0] + " but no more than " + temp[1] + " times" + "\n");
+                            }
+
+                        }
+                        i += range.length();
+                    }
+
+                }else if(fragment.equals("^")){
+                    if(i==0){
+                        builder.append(indent + fragment + "  -  " + description.get(fragment).split("\\.")[0]+ "\n");
+                    }else{
+                        builder.append(indent + fragment + "  -  " + description.get(fragment).split("\\.")[1]+ "\n");
+                    }
+                }else if(fragment.equals("$")){
+                    if(i==regex.length()-1){
+                        builder.append(indent + fragment + "  -  " + description.get(fragment).split("\\.")[0]+ "\n");
+                    }else{
+                        builder.append(indent + fragment + "  -  " + description.get(fragment).split("\\.")[1]+ "\n");
+                    }
+                }else if(fragment.equals("&") && regex.charAt(i+1) == '&'){
+                    builder.append(indent + "&&" + "  -  " + description.get("&&") + "\n");
+                    i++;
                 }
-            }else if(fragment.equals("$")){
-                if(i==regex.length()-1){
-                    builder.append(indent + fragment + "  -  " + description.get(fragment).split("\\.")[0]+ "\n");
-                }else{
-                    builder.append(indent + fragment + "  -  " + description.get(fragment).split("\\.")[1]+ "\n");
-                }
-            }else if(fragment.equals("&") && regex.charAt(i+1) == '&'){
-                builder.append(indent + "&&" + "  -  " + description.get("&&") + "\n");
-                i++;
             }else{
                 result = explainSimpleChar(fragment,i);
                 i += result.split(" ")[0].length()-1;                  //to skip already described chars
