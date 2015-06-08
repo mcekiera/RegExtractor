@@ -1,6 +1,7 @@
 package Model;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
@@ -9,7 +10,7 @@ public class Explanation {
     String expression;
     HashMap<String, String> description;
     private static String indent;
-    private String[] chars = {"\\","p", ")","(","[","]","{","}","^","$","?"};
+    private String[] special = {"\\","p", ")","(","[","]","{","}","^","$","?"};
 
     public Explanation(){
         description = loadElements();
@@ -18,31 +19,33 @@ public class Explanation {
 
     public String explain(String regex){
         expression = regex;
+        String result = "";
         StringBuilder builder = new StringBuilder();
         int len = regex.length();
         for(int i = 0; i < regex.length(); i++){
-            String part = regex.substring(i,i+1);
+            String fragment = regex.substring(i,i+1);
+            System.out.println(fragment);
             //escepe
-            if(part.equals("\\")){
+            if(fragment.equals("\\")){
                 if(description.containsKey(regex.substring(i,i+2))){
                     builder.append(indent + regex.substring(i,i+2) + "  -  " + description.get(regex.substring(i,i+2))+ "\n");
                 }else if(regex.charAt(i+1) == 'p' || regex.charAt(i+1) == 'P'){
                     builder.append(indent + regex.substring(i,regex.indexOf("}",i)+1) + "  -  " + description.get(regex.substring(i,regex.indexOf("}",i)+1))+ "\n");
                     i+= regex.substring(i,regex.indexOf("}",i)).length()-1;
                 }else{
-                    builder.append(indent + regex.substring(i,i+2) + "  -  " + description.get(part) +
+                    builder.append(indent + regex.substring(i,i+2) + "  -  " + description.get(fragment) +
                             "  " + regex.substring(i+1,i+2) + " (" + description.get(regex.substring(i+1,i+2)) + ")\n");
                 }
                 i++;
                 //parantesies
-            }else if(part.equals("]") || part.equals(")") || part.equals("}")){
+            }else if(fragment.equals("]") || fragment.equals(")") || fragment.equals("}")){
                 indent = indent.substring(0, indent.length()-8);
-                builder.append(indent + part + "  -  " + description.get(part)+ "\n");
+                builder.append(indent + fragment + "  -  " + description.get(fragment)+ "\n");
 
-            }else if(part.equals("[") || part.equals("(") || part.equals("{")){
-                builder.append(indent + part + "  -  " + description.get(part)+ "\n");
+            }else if(fragment.equals("[") || fragment.equals("(") || fragment.equals("{")){
+                builder.append(indent + fragment + "  -  " + description.get(fragment)+ "\n");
                 indent += "        ";
-                if(part.equals("{")){
+                if(fragment.equals("{")){
                     String range = regex.substring(i + 1, regex.indexOf("}", i));
                     if(!range.contains(",")){
                         builder.append(indent + range + "  -  " + "exactly " + range + " times" + "\n");
@@ -58,43 +61,47 @@ public class Explanation {
                     i += range.length();
                 }
 
-            }else if(part.equals("^")){
+            }else if(fragment.equals("^")){
                 if(i==0){
-                    builder.append(indent + part + "  -  " + description.get(part).split("\\.")[0]+ "\n");
+                    builder.append(indent + fragment + "  -  " + description.get(fragment).split("\\.")[0]+ "\n");
                 }else{
-                    builder.append(indent + part + "  -  " + description.get(part).split("\\.")[1]+ "\n");
+                    builder.append(indent + fragment + "  -  " + description.get(fragment).split("\\.")[1]+ "\n");
                 }
-            }else if(part.equals("$")){
+            }else if(fragment.equals("$")){
                 if(i==regex.length()-1){
-                    builder.append(indent + part + "  -  " + description.get(part).split("\\.")[0]+ "\n");
+                    builder.append(indent + fragment + "  -  " + description.get(fragment).split("\\.")[0]+ "\n");
                 }else{
-                    builder.append(indent + part + "  -  " + description.get(part).split("\\.")[1]+ "\n");
+                    builder.append(indent + fragment + "  -  " + description.get(fragment).split("\\.")[1]+ "\n");
                 }
+            }else if(fragment.equals("&") && regex.charAt(i+1) == '&'){
+                builder.append(indent + "&&" + "  -  " + description.get("&&") + "\n");
+                i++;
             }else{
-                if(description.get(part)!=null){
-                    builder.append(indent + part + "  -  " + description.get(part)+ "\n");
-                }else if(part.equals("&") && regex.charAt(i+1) == '&'){
-                    builder.append(indent + "&&" + "  -  " + description.get("&&") + "\n");
-                    i++;
-                }else{
-                    if(len > i + 2 && (Character.isDigit(regex.charAt(i)) || Character.isLetter(regex.charAt(i))) && regex.substring(i+1,i+2).equals("-")){
-                        builder.append(indent + regex.substring(i,i+3) + "  -  " + "range from \"" + part + "\" to \"" + regex.substring(i+2,i+3) + "\"\n");
-                    i += 2;
-                    }else{
-                        builder.append(indent + part + "  -  " + "matching for character: "+ part + "\n");
-                    }
-                }
+                result = explainSimpleChar(fragment,i);
+                i += result.split(" ")[0].length()-1;                  //to skip already described chars
+                builder.append(indent + result + "\n");
             }
         }
-
         return builder.toString();
     }
 
+    public String explainSimpleChar(String character, int i){
+        if(isSimpleMetacharacter(character)){
+            return character + "  -  " + description.get(character);
+        }else{
+            if(isCharacterClass(i)){
+                return expression.substring(i,i+3) + "  -  " + "range from \"" + character + "\" to \""
+                        + expression.substring(i+2,i+3) + "\"";
+            }else{
+                return character + "  -  " + "matching for character: "+ character;
+            }
+        }
+    }
+
     public void separateCases(String character){
-        String a = "aaa";
         switch(getMeta(character)){
             case ESCAPE_MARK:
-                break;
+
             case BEGINNING_OF_LINE:
                 break;
             case POSIX:
@@ -115,14 +122,18 @@ public class Explanation {
                 break;
             case END_OF_LINE:
                 break;
+            case AND:
+                break;
             default:
                 break;
 
         }
     }
 
-    public static Metacharacter getMeta(String ch){
-        return Metacharacter.valueOf(ch);
+
+
+    public static Special getMeta(String ch){
+        return Special.valueOf(ch);
     }
 
 
@@ -148,6 +159,27 @@ public class Explanation {
 
     public void resetIndentation(){
         indent = "  ";
+    }
+
+    public boolean isSpecialCase(String character){
+        return Arrays.asList(special).contains(character);
+    }
+
+    public boolean isSimpleMetacharacter(String character){
+        return description.containsKey(character);
+    }
+
+    public boolean isCharacterClass(int index){
+        return isInBounds(index,3) && isLetterOrDigit(expression.charAt(index)) && expression.charAt(index+1)=='-' &&
+                isLetterOrDigit(expression.charAt(index+2));
+    }
+
+    public boolean isLetterOrDigit(char character){
+        return Character.isDigit(character) || Character.isLetter(character);
+    }
+
+    public boolean isInBounds(int index, int expectedLength){
+        return expression.length() >= index + expectedLength;
     }
 
     //todo zostaje tylko podział na greedy, reluctant and possesive quantifires no i refactoring całej metody
