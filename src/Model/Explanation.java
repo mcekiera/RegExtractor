@@ -35,7 +35,9 @@ public class Explanation {
 
             i += up;                                   // to skip character already described by specialized methods
             System.out.println(result.split(" ")[0]);
-            builder.append(result + "\n" + indent);
+            builder.append(indent);
+            builder.append(result);
+            builder.append("\n");
         }
 
         return builder.toString();
@@ -59,25 +61,15 @@ public class Explanation {
         String character = expression.substring(i,i+1);
         switch(Special.getSpecial(character)){
             case ESCAPE_MARK:
-                if(description.containsKey(character)){
-                    up = 1;
-                    return expression.substring(i,i+2) + "  -  " + description.get(character);
-                }else if(character.equals('p') || expression.charAt(i+1) == 'P'){
-                    up = expression.substring(i,expression.indexOf("}",i)+1).length();
-                    return expression.substring(i,expression.indexOf("}",i)+1) + "  -  "
-                            + description.get(expression.substring(i,expression.indexOf("}",i)+1));
-                }else{
-                    up = 1;
-                    return expression.substring(i,i+2) + "  -  " + description.get(character) +
-                            "  " + expression.substring(i+1,i+2) + " (" + description.get(expression.substring(i+1,i+2));
-                }
+                return matchBackslash(i);
+
             case BEGINNING_OF_LINE:
-                matchBeginningOrEnd(i);
+                return matchBeginningOrEnd(i);
 
             case OPEN_PARANTHESIS:
             case OPEN_SQUARE_BRACKET:
                 indent += "        ";
-                return character + "  -  " + description.get(character);
+                return matchSimpleMetacharacter(i);
 
             case CLOSE_PARANTHESIS:
             case CLOSE_SQUARE_BRACKET:
@@ -89,15 +81,15 @@ public class Explanation {
                 String range = expression.substring(i + 1, expression.indexOf("}", i));
                 if(!range.contains(",")){
                     up = range.length();
-                    return character + "  -  " + description.get(character) + "\n" + range + "  -  " + "exactly " + range + " times";
+                    return matchSimpleMetacharacter(i) + "\n" + range + "  -  " + "exactly " + range + " times";
                 }else{
                     String[] temp = range.split(",");
                     if(temp.length == 1){
                         up = range.length();
-                        return character + "  -  " + description.get(character) + "\n"+ range + "  -  " + "at least " + temp[0] + " times";
+                        return matchSimpleMetacharacter(i) + "\n"+ range + "  -  " + "at least " + temp[0] + " times";
                     }else{
                         up = range.length();
-                        return character + "  -  " + description.get(character) + "\n"+ range + "  -  " + "at least " + temp[0] + " but no more than " + temp[1] + " times";
+                        return matchSimpleMetacharacter(i) + "\n"+ range + "  -  " + "at least " + temp[0] + " but no more than " + temp[1] + " times";
                     }
                 }
 
@@ -113,6 +105,20 @@ public class Explanation {
         }
     }
 
+    public String matchBackslash(int i){
+        String character = expression.substring(i,i+2);
+        if(description.containsKey(character)){
+            up = 1;
+            return expression.substring(i,i+2) + "  -  " + description.get(character);
+        }else if(expression.charAt(i+1) == 'p' || expression.charAt(i+1) == 'P'){                //todo
+            up = expression.substring(i,expression.indexOf("}",i)+1).length();
+            return expression.substring(i,expression.indexOf("}",i)+1) + "  -  "
+                    + description.get(expression.substring(i,expression.indexOf("}",i)+1));
+        }else{
+            up = 1;
+            return character + "  -  " + description.get(character)  + expression.substring(i+1,i+2) + " (" + description.get(expression.substring(i+1,i+2))+")";
+        }
+    }
 
     public String matchBeginningOrEnd(int i){
         String character = expression.substring(i,i+1);
@@ -126,6 +132,11 @@ public class Explanation {
 
     public String matchCharacter(String character){
         return character + "  -  " + "matching for character: "+ character;
+    }
+
+    public String matchSimpleMetacharacter(int i){
+        String character = expression.substring(i,i+1);
+        return character + "  -  " + description.get(character);
     }
 
     public String matchAnd(int index){
@@ -171,7 +182,6 @@ public class Explanation {
         HashMap<String, String> elements = new HashMap<String,String>();
         File file = new File("src\\Model\\regex.txt");
         try{
-            int i = 0;
             String line;
             BufferedReader reader = new BufferedReader(new FileReader(file));
             while((line = reader.readLine()) != null){
