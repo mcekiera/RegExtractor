@@ -9,32 +9,39 @@ public class Explanation {
     HashMap<String, String> description;
     private static String indent;
     private String[] special = {"\\","p", ")","(","[","]","{","}","^","$","?","&"};
-    public boolean isInsideClass = false;
+    private String[] metaInCharClass = {"\\","^","-"};
+    int isInsideClass;
     int up;
+    String result;
+    String character;
+    StringBuilder builder;
 
     public Explanation(){
         description = loadElements();
         indent = "  ";
+        builder = new StringBuilder();
+
     }
 
     public String explain(String regex){
         expression = regex;
-        String result = "";
-        StringBuilder builder = new StringBuilder();
+        isInsideClass = 0;
+        builder = new StringBuilder();
+
         for(int i = 0; i < regex.length(); i++){
             up = 0;                                     // if matching character is not special, there is no need to
             String fragment = regex.substring(i,i+1);   // change int i value, and skip indices of regular expression
+            System.out.println(fragment);
 
-            if(isInsideClass){
-                matchCharacter(fragment);
+            if(isMetacharacterInCharacterClass(fragment)){         //some general meta-character are not meta- in character classes
+                result = matchCharacter(fragment);                 //and are treated as normal characters
             }else if(isSpecialCase(fragment)){
                 result = explainSpecialCase(i);
             }else{
-                result = explainSimpleChar(fragment,i);
+                result = explainSimpleCase(i);
             }
 
             i += up;                                   // to skip character already described by specialized methods
-            System.out.println(result.split(" ")[0]);
             builder.append(indent);
             builder.append(result);
             builder.append("\n");
@@ -43,7 +50,8 @@ public class Explanation {
         return builder.toString();
     }
 
-    public String explainSimpleChar(String character, int i){
+    public String explainSimpleCase(int i){
+        String character = expression.substring(i,i+1);
         if(isSimpleMetacharacter(character)){
             return character + "  -  " + description.get(character);
         }else{
@@ -66,13 +74,15 @@ public class Explanation {
             case BEGINNING_OF_LINE:
                 return matchBeginningOrEnd(i);
 
-            case OPEN_PARANTHESIS:
             case OPEN_SQUARE_BRACKET:
+                isInsideClass++;
+            case OPEN_PARANTHESIS:
                 indent += "        ";
                 return matchSimpleMetacharacter(i);
 
-            case CLOSE_PARANTHESIS:
             case CLOSE_SQUARE_BRACKET:
+                isInsideClass--;
+            case CLOSE_PARANTHESIS:
             case CLOSE_CURLY_BRACKET:
                 return closingBracket(character);
 
@@ -106,17 +116,18 @@ public class Explanation {
     }
 
     public String matchBackslash(int i){
-        String character = expression.substring(i,i+2);
-        if(description.containsKey(character)){
+        String escapeSequence = expression.substring(i,i+2);
+        if(description.containsKey(escapeSequence)){           // is declared meta-sequence
             up = 1;
-            return expression.substring(i,i+2) + "  -  " + description.get(character);
-        }else if(expression.charAt(i+1) == 'p' || expression.charAt(i+1) == 'P'){                //todo
+            return expression.substring(i,i+2) + "  -  " + description.get(escapeSequence);
+        }else if(isPOSIX(expression.charAt(i+1))){
             up = expression.substring(i,expression.indexOf("}",i)+1).length();
             return expression.substring(i,expression.indexOf("}",i)+1) + "  -  "
                     + description.get(expression.substring(i,expression.indexOf("}",i)+1));
-        }else{
+        }else{                                                // is a escape sequence
             up = 1;
-            return character + "  -  " + description.get(character)  + expression.substring(i+1,i+2) + " (" + description.get(expression.substring(i+1,i+2))+")";
+            System.out.println(escapeSequence + "  " + description.get("\\"));
+            return escapeSequence + "  -  " + description.get("\\") + " for: " + expression.substring(i+1,i+2) + " (" + description.get(expression.substring(i+1,i+2))+")";
         }
     }
 
@@ -176,6 +187,18 @@ public class Explanation {
 
     public boolean isInBounds(int index, int expectedLength){
         return expression.length() >= index + expectedLength;
+    }
+
+    public boolean isInsideCharClass(){
+        return isInsideClass > 0;
+    }
+
+    public boolean isPOSIX(char ch){
+        return ch == 'p' || ch == 'P';
+    }
+
+    public boolean isMetacharacterInCharacterClass(String character){
+        return isInsideCharClass() && Arrays.asList(metaInCharClass).contains(character);
     }
 
     private HashMap<String, String> loadElements(){
