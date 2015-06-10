@@ -9,7 +9,7 @@ public class Explanation {
     HashMap<String, String> description;
     private static String indent;
     private String[] special = {"\\","p", ")","(","[","]","{","}","^","$","?","&"};
-    private String[] metaInCharClass = {"\\","^","-"};
+    private String[] metaInCharClass = {"\\","^","]","["};
     int isInsideClass;
     int up;
     String result;
@@ -31,14 +31,15 @@ public class Explanation {
         for(int i = 0; i < regex.length(); i++){
             up = 0;                                     // if matching character is not special, there is no need to
             String fragment = regex.substring(i,i+1);   // change int i value, and skip indices of regular expression
-            System.out.println(fragment);
 
-            if(isMetacharacterInCharacterClass(fragment)){         //some general meta-character are not meta- in character classes
-                result = matchCharacter(fragment);                 //and are treated as normal characters
-            }else if(isSpecialCase(fragment)){
-                result = explainSpecialCase(i);
+            if(isInsideCharClass()){
+                result = explainCharacterClass(i);
             }else{
-                result = explainSimpleCase(i);
+                if(isSpecialCase(fragment)){
+                    result = explainSpecialCase(i);
+                }else{
+                    result = explainSimpleCase(i);
+                }
             }
 
             i += up;                                   // to skip character already described by specialized methods
@@ -50,18 +51,28 @@ public class Explanation {
         return builder.toString();
     }
 
+
+    public String explainCharacterClass(int i){
+        if(isMetacharacterInCharacterClass(i)){
+            if(expression.substring(i,i+1).equals("^") && !(expression.substring(i-1,i).equals("["))){
+                return matchCharacter("^");
+            }
+            return explainSpecialCase(i);
+        }else if(isRange(i)){
+            up = 2;
+            return expression.substring(i,i+3) + "  -  " + "range from \"" + expression.substring(i,i+1) + "\" to \""
+                    + expression.substring(i+2,i+3) + "\"";
+        }else{
+            return matchCharacter(expression.substring(i,i+1));
+        }
+    }
+
     public String explainSimpleCase(int i){
         String character = expression.substring(i,i+1);
-        if(isSimpleMetacharacter(character)){
+        if(isSimpleMetacharacter(character) && !(isInsideCharClass())){
             return character + "  -  " + description.get(character);
         }else{
-            if(isCharacterClass(i)){
-                up = 2;
-                return expression.substring(i,i+3) + "  -  " + "range from \"" + character + "\" to \""
-                        + expression.substring(i+2,i+3) + "\"";
-            }else{
-                return matchCharacter(character);
-            }
+            return matchCharacter(character);
         }
     }
 
@@ -80,28 +91,15 @@ public class Explanation {
                 indent += "        ";
                 return matchSimpleMetacharacter(i);
 
+            case OPEN_CURLY_BRACKET:
+                indent += "        ";
+                return matchInterval(i);
+
             case CLOSE_SQUARE_BRACKET:
                 isInsideClass--;
             case CLOSE_PARANTHESIS:
             case CLOSE_CURLY_BRACKET:
                 return closingBracket(character);
-
-            case OPEN_CURLY_BRACKET:
-                indent += "        ";
-                String range = expression.substring(i + 1, expression.indexOf("}", i));
-                if(!range.contains(",")){
-                    up = range.length();
-                    return matchSimpleMetacharacter(i) + "\n" + range + "  -  " + "exactly " + range + " times";
-                }else{
-                    String[] temp = range.split(",");
-                    if(temp.length == 1){
-                        up = range.length();
-                        return matchSimpleMetacharacter(i) + "\n"+ range + "  -  " + "at least " + temp[0] + " times";
-                    }else{
-                        up = range.length();
-                        return matchSimpleMetacharacter(i) + "\n"+ range + "  -  " + "at least " + temp[0] + " but no more than " + temp[1] + " times";
-                    }
-                }
 
             case QUESTION_MARK:
                 return "??";
@@ -110,7 +108,7 @@ public class Explanation {
             case AND:
                 return matchAnd(i);
             default:
-                return "!!!!!!!!!!!!!!!!!!!!!";
+                return "Unexpected sequence";
 
         }
     }
@@ -126,11 +124,26 @@ public class Explanation {
                     + description.get(expression.substring(i,expression.indexOf("}",i)+1));
         }else{                                                // is a escape sequence
             up = 1;
-            System.out.println(escapeSequence + "  " + description.get("\\"));
             return escapeSequence + "  -  " + description.get("\\") + " for: " + expression.substring(i+1,i+2) + " (" + description.get(expression.substring(i+1,i+2))+")";
         }
     }
 
+    public String matchInterval(int i){
+        String range = expression.substring(i + 1, expression.indexOf("}", i));
+        if(!range.contains(",")){
+            up = range.length();
+            return matchSimpleMetacharacter(i) + "\n" + range + "  -  " + "exactly " + range + " times";
+        }else{
+            String[] temp = range.split(",");
+            if(temp.length == 1){
+                up = range.length();
+                return matchSimpleMetacharacter(i) + "\n"+ range + "  -  " + "at least " + temp[0] + " times";
+            }else{
+                up = range.length();
+                return matchSimpleMetacharacter(i) + "\n"+ range + "  -  " + "at least " + temp[0] + " but no more than " + temp[1] + " times";
+            }
+        }
+    }
     public String matchBeginningOrEnd(int i){
         String character = expression.substring(i,i+1);
         int beginningOrEnd = (character.equals("^")) ? 0 : expression.length()-1;  // match for beginning or end of regex
@@ -176,7 +189,7 @@ public class Explanation {
         return description.containsKey(character);
     }
 
-    public boolean isCharacterClass(int index){
+    public boolean isRange(int index){
         return isInBounds(index,3) && isLetterOrDigit(expression.charAt(index)) && expression.charAt(index+1)=='-' &&
                 isLetterOrDigit(expression.charAt(index+2));
     }
@@ -197,8 +210,8 @@ public class Explanation {
         return ch == 'p' || ch == 'P';
     }
 
-    public boolean isMetacharacterInCharacterClass(String character){
-        return isInsideCharClass() && Arrays.asList(metaInCharClass).contains(character);
+    public boolean isMetacharacterInCharacterClass(int i){
+        return Arrays.asList(metaInCharClass).contains(expression.substring(i, i+1));
     }
 
     private HashMap<String, String> loadElements(){
