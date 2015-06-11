@@ -1,5 +1,6 @@
 package Model;
 
+import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,21 +34,36 @@ public class Analyzer{
 
     public TreeMap<Integer, Integer> analyze(){
         TreeMap<Integer, Integer> divided = new TreeMap<Integer, Integer>();
-
+        ArrayList<Integer> matching = new ArrayList<Integer>();
+        String sample;
         for(int i = 0; i <= regex.length() ; i++){    // int i decide about length of substring
-            try{                                                       //try-catch block is kept inside of method, to ensure
-                pattern = Extractor.getPattern(regex.substring(0,i),Extractor.getOption());       //that it will continue to work even if exception is thrown
+            try{
+                matching.add(0,i);
+                sample = regex.substring(0,i);                                                   //try-catch block is kept inside of method, to ensure
+                pattern = Extractor.getPattern(sample,Extractor.getOption());       //that it will continue to work even if exception is thrown
                 matcher = pattern.matcher(example);
                 matcher.find();
                 divided.put(i, matcher.end());
+
+
+
+               //if(matching.size()>=2) divided = checkForGrouping(divided,sample,matching.get(0),matching.get(1));
+
             }catch (PatternSyntaxException ex){
                 exceptionMessage(ex);
             }catch (IllegalStateException ex){
                 exceptionMessage(ex);
             }
         }
+        System.out.println(divided.keySet().toString());
+        System.out.println(divided.values().toString());
+
         divided = checkForEndOfALina(divided);
         divided = checkForBeginningOfALina(divided);
+        divided = checkForGrouping(divided);
+
+        System.out.println(divided.keySet().toString());
+        System.out.println(divided.values().toString());
 
         return divided;
     }
@@ -113,6 +129,65 @@ public class Analyzer{
     }
 
     public static void exceptionMessage(Exception ex){
-        System.out.println(ex.getClass() + " is expected as part of program flow");
+        //System.out.println(ex.getClass() + " is expected as part of program flow");
     }
+
+    public boolean isEndingWithGroup(String expression){
+
+        String end = expression.substring(expression.length()-2,expression.length());
+        return end.startsWith("\\") && Character.isDigit(end.charAt(1));
+    }
+
+    public boolean isProceededByGroup(String expression){
+        return expression.length() > 3 && isEndingWithGroup(expression) && isEndingWithGroup(expression.substring(0, expression.length() - 2));
+    }
+
+    public int getGroup(String regex){
+        return Integer.parseInt(regex.substring(regex.length()-1));
+    }
+
+    public TreeMap<Integer,Integer> checkForGrouping(TreeMap<Integer,Integer> map){
+        ArrayList<Integer> vals = new ArrayList<Integer>(map.values());
+        ArrayList<Integer> keys = new ArrayList<Integer>(map.keySet());
+        int p = 0;
+        for(int i = 1; i < map.size(); i++){
+            if(vals.get(i) < vals.get(i-1)){
+
+                    int range = vals.get(i) - vals.get(i-2);
+                    String patterns = regex.substring(0,keys.get(i-2))+regex.substring(keys.get(i-1));
+                    Pattern pattern = Pattern.compile(patterns);
+
+                    System.out.println(patterns);
+                    System.out.println(range);
+                    System.out.println(p++);
+
+                    for(int k = 0; k < range; k++){
+                        try{
+
+                            String sample = example.substring(0,vals.get(i-2)) + example.substring(vals.get(i-2)+k);
+                            System.out.println(sample);
+                            Matcher matcher = pattern.matcher(sample);
+                            matcher.find();                                       //todo reverse plus this?
+                            map.put(keys.get(i-1),vals.get(i-2)+k);
+                            System.out.println("yatta!" + k);
+                            System.out.println(keys.get(i-1) + "," + (vals.get(i-2)+k));
+
+                        }catch (PatternSyntaxException ex){
+                            exceptionMessage(ex);
+                        }catch (IllegalStateException ex){
+                            exceptionMessage(ex);
+                        }
+
+
+                    }
+
+
+
+            }
+        }
+        return map;
+    }
+
+
+
 }

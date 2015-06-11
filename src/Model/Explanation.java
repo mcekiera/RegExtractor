@@ -52,7 +52,7 @@ public class Explanation {
     }
 
 
-    public String explainCharacterClass(int i){
+    private String explainCharacterClass(int i){
         if(isMetacharacterInCharacterClass(i)){
             if(expression.substring(i,i+1).equals("^") && !(expression.substring(i-1,i).equals("["))){
                 return matchCharacter("^");
@@ -67,7 +67,7 @@ public class Explanation {
         }
     }
 
-    public String explainSimpleCase(int i){
+    private String explainSimpleCase(int i){
         String character = expression.substring(i,i+1);
         if(isSimpleMetacharacter(character) && !(isInsideCharClass())){
             return character + "  -  " + description.get(character);
@@ -76,7 +76,7 @@ public class Explanation {
         }
     }
 
-    public String explainSpecialCase(int i){
+    private String explainSpecialCase(int i){
         String character = expression.substring(i,i+1);
         switch(Special.getSpecial(character)){
             case ESCAPE_MARK:
@@ -113,7 +113,7 @@ public class Explanation {
         }
     }
 
-    public String matchBackslash(int i){
+    private String matchBackslash(int i){
         String escapeSequence = expression.substring(i,i+2);
         if(description.containsKey(escapeSequence)){           // is declared meta-sequence
             up = 1;
@@ -128,7 +128,7 @@ public class Explanation {
         }
     }
 
-    public String matchInterval(int i){
+    private String matchInterval(int i){
         String range = expression.substring(i + 1, expression.indexOf("}", i));
         if(!range.contains(",")){
             up = range.length();
@@ -144,7 +144,7 @@ public class Explanation {
             }
         }
     }
-    public String matchBeginningOrEnd(int i){
+    private String matchBeginningOrEnd(int i){
         String character = expression.substring(i,i+1);
         int beginningOrEnd = (character.equals("^")) ? 0 : expression.length()-1;  // match for beginning or end of regex
         if(i==beginningOrEnd){
@@ -154,16 +154,16 @@ public class Explanation {
         }
     }
 
-    public String matchCharacter(String character){
+    private String matchCharacter(String character){
         return character + "  -  " + "matching for character: "+ character;
     }
 
-    public String matchSimpleMetacharacter(int i){
+    private String matchSimpleMetacharacter(int i){
         String character = expression.substring(i,i+1);
         return character + "  -  " + description.get(character);
     }
 
-    public String matchAnd(int index){
+    private String matchAnd(int index){
         if(isInBounds(index,2) && expression.charAt(index+1)=='&'){
             up = 1;
             return  "&&" + "  -  " + description.get("&&");
@@ -172,7 +172,7 @@ public class Explanation {
         }
     }
 
-    public String closingBracket(String character){
+    private String closingBracket(String character){
         indent = indent.substring(0, indent.length()-8);
         return character + "  -  " + description.get(character);
     }
@@ -181,36 +181,36 @@ public class Explanation {
         indent = "  ";
     }
 
-    public boolean isSpecialCase(String character){
+    private boolean isSpecialCase(String character){
         return Arrays.asList(special).contains(character);
     }
 
-    public boolean isSimpleMetacharacter(String character){
+    private boolean isSimpleMetacharacter(String character){
         return description.containsKey(character);
     }
 
-    public boolean isRange(int index){
+    private boolean isRange(int index){
         return isInBounds(index,3) && isLetterOrDigit(expression.charAt(index)) && expression.charAt(index+1)=='-' &&
                 isLetterOrDigit(expression.charAt(index+2));
     }
 
-    public boolean isLetterOrDigit(char character){
+    private boolean isLetterOrDigit(char character){
         return Character.isDigit(character) || Character.isLetter(character);
     }
 
-    public boolean isInBounds(int index, int expectedLength){
+    private boolean isInBounds(int index, int expectedLength){
         return expression.length() >= index + expectedLength;
     }
 
-    public boolean isInsideCharClass(){
+    private boolean isInsideCharClass(){
         return isInsideClass > 0;
     }
 
-    public boolean isPOSIX(char ch){
+    private boolean isPOSIX(char ch){
         return ch == 'p' || ch == 'P';
     }
 
-    public boolean isMetacharacterInCharacterClass(int i){
+    private boolean isMetacharacterInCharacterClass(int i){
         return Arrays.asList(metaInCharClass).contains(expression.substring(i, i+1));
     }
 

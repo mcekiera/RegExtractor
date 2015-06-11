@@ -227,7 +227,7 @@ public class UserInterface {
                 forPattern.addHighlight(r,i,pointer);
             }catch (BadLocationException ex){
                 System.out.println(ex.toString() + "BadLocationException is expected" + ex.getCause());
-                ex.printStackTrace();
+                //ex.printStackTrace();
             }
             r = i;
         }
