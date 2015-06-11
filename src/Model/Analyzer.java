@@ -153,36 +153,31 @@ public class Analyzer{
         for(int i = 1; i < map.size(); i++){
             if(vals.get(i) < vals.get(i-1)){
 
-                    int range = vals.get(i) - vals.get(i-2);
-                    String patterns = regex.substring(0,keys.get(i-2))+regex.substring(keys.get(i-1));
-                    Pattern pattern = Pattern.compile(patterns);
+                int range = vals.get(i) - vals.get(i-2);
+                String patterns = regex.substring(0,keys.get(i-2))+regex.substring(keys.get(i-1));
+                Pattern pattern = Pattern.compile(patterns);
 
-                    System.out.println(patterns);
-                    System.out.println(range);
-                    System.out.println(p++);
+                System.out.println(patterns);
+                System.out.println(range);
+                System.out.println(p++);
 
-                    for(int k = 0; k < range; k++){
-                        try{
+                for(int k = 0; k < range; k++){
+                    try{
 
-                            String sample = example.substring(0,vals.get(i-2)) + example.substring(vals.get(i-2)+k);
-                            System.out.println(sample);
-                            Matcher matcher = pattern.matcher(sample);
-                            matcher.find();                                       //todo reverse plus this?
-                            map.put(keys.get(i-1),vals.get(i-2)+k);
-                            System.out.println("yatta!" + k);
-                            System.out.println(keys.get(i-1) + "," + (vals.get(i-2)+k));
+                        String sample = example.substring(0,vals.get(i-2)) + example.substring(vals.get(i-2)+k);
+                        System.out.println(sample);
+                        Matcher matcher = pattern.matcher(sample);
+                        matcher.find();                                       //todo reverse plus this? kiedy dochodzi do grupowania, zaczyna od tyłu, az dojdzie do odpowiedniego indeksu i go zasąpi, póxniej sprawdzać wartości
+                        map.put(keys.get(i-1),vals.get(i-2)+k);
+                        System.out.println("yatta!" + k);
+                        System.out.println(keys.get(i-1) + "," + (vals.get(i-2)+k));
 
-                        }catch (PatternSyntaxException ex){
-                            exceptionMessage(ex);
-                        }catch (IllegalStateException ex){
-                            exceptionMessage(ex);
-                        }
-
-
+                    }catch (PatternSyntaxException ex){
+                        exceptionMessage(ex);
+                    }catch (IllegalStateException ex){
+                        exceptionMessage(ex);
                     }
-
-
-
+                }
             }
         }
         return map;
