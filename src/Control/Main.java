@@ -3,10 +3,7 @@ package Control;
 
 import Interface.Tabs;
 import Interface.UserInterface;
-import Model.Analyzer;
-import Model.Explanation;
-import Model.Extractor;
-import Model.Options;
+import Model.*;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -45,6 +42,9 @@ public class Main {
                 break;
             case DESCRIBE:
                 userInterface.diplayExplanation(explanation.explain(regex));
+                Grouper grouper = new Grouper(regex);
+                grouper.getGroups();
+
                 break;
         }
 
