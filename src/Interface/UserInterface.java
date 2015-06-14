@@ -240,8 +240,8 @@ public class UserInterface {
     }
 
     public void updateExamples(){
+        examples.removeAllElements();
         for(Highlighter.Highlight light : highlighter.getHighlights()){
-            examples.removeAllElements();
             examples.addElement(matcherView.getText().substring(light.getStartOffset(), light.getEndOffset()));
         }
     }

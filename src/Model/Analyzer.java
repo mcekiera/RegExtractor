@@ -10,11 +10,17 @@ public class Analyzer{
     String example;
     Pattern pattern;
     Matcher matcher;
+    TreeMap<Integer,String> groups;
+    String temp = "";
+    int count;
+    String altered;
 
     public Analyzer(String regex, String analyzed){
         this.regex = regex;
         this.example = analyzed;
-
+        groups = getGroups();
+        count = 0;
+        //altered = getProperSample();
     }
 
     /**
@@ -30,7 +36,10 @@ public class Analyzer{
      *patterns, from valid pattern which are then recorded.
      * @return TreeMap\<Integer,Integer\> with two sets of indices - for Pattern and Example Strings.
      */
-
+    /**
+     * analyze składa się teraz z dwóch elementów, analizy od przodu i od tyłu, później wyniki są łączone
+     * @return
+     */
     public TreeMap<Integer,Integer> analyze(){             // merge two versions
         int del = regex.length()/2;
         TreeMap<Integer,Integer> merged = new TreeMap<Integer, Integer>();
@@ -38,10 +47,17 @@ public class Analyzer{
         TreeMap<Integer,Integer> backward = analyzeBackward();
         merged.putAll(forward);
         for(int key : backward.keySet()){
-            if(!merged.containsKey(key) && key>del || (merged.containsKey(key) && key>del && !(backward.get(key)==0))){
+            if((!merged.containsKey(key) && key>del) || (merged.containsKey(key) && key>del && !(backward.get(key)==0))
+                    || merged.containsKey(key) && forward.get(key)==example.length()){
                 merged.put(key,backward.get(key));
             };
         }
+        System.out.println(forward.keySet().toString());
+        System.out.println(forward.values().toString());
+        System.out.println(backward.keySet().toString());
+        System.out.println(backward.values().toString());
+        System.out.println(merged.keySet().toString());
+        System.out.println(merged.values().toString());
 
         return merged;
     }
@@ -71,13 +87,15 @@ public class Analyzer{
 
     public TreeMap<Integer, Integer> analyzeBackward(){
         TreeMap<Integer, Integer> divided = new TreeMap<Integer, Integer>();
-
+        String sample;
         for(int i = regex.length(); i >= 0 ; i--){    // int i decide about length of substring
             try{
-                pattern = Pattern.compile(regex.substring(i)+"$");
+                String temp = getProperSample(regex.substring(i));
+                pattern = Pattern.compile(temp+"$");
+                System.out.println(temp);
                 matcher = pattern.matcher(example);
                 matcher.find();
-                if(i == regex.length() && matcher.start()==0){
+                if(i == regex.length() && matcher.start()==0){      //is it necessary with merge?
                     divided.put(i, example.length());
                     continue;
                 }
@@ -90,6 +108,22 @@ public class Analyzer{
         }
         divided = checkForEndOfALina(divided);
         return divided;
+    }
+
+    /**
+     * zmienia fragmenty zwiazane z powtarzeniem schwytanego wzoru: /1/2/3 na schwytane fragmenty, tak by dopasowało
+     * dokładnie to samo
+     * @param str
+     * @return
+     */
+    public String getProperSample(String str){
+        String sample = str;
+        for(int key : groups.keySet()){
+            String temp = "(" + groups.get(key).replace("\\","\\\\\\\\") + ")";         //this is a crucial part to replece single "\"!!!
+            sample = sample.replaceAll("\\\\"+key, temp);
+        }
+        System.out.println(sample);
+        return sample;
     }
 
     /**
@@ -151,5 +185,29 @@ public class Analyzer{
 
     public static void exceptionMessage(Exception ex){
         //System.out.println(ex.getClass() + " is expected as part of program flow");
+    }
+
+
+    /**
+     * chyba wypadało by przenieś tę metodę do groupera, ewentualnie przerobić go na static
+     * @return
+     */
+    public TreeMap<Integer,String> getGroups(){
+        TreeMap<Integer,String> groups = new TreeMap<Integer, String>();
+        try{
+            pattern = Pattern.compile(regex);
+            matcher = pattern.matcher(example);
+            matcher.find();
+            groups.put(0,regex);
+            for(int i = 1; i <= matcher.groupCount(); i++){
+                groups.put(i,matcher.group(i));
+                System.out.println(i + "   " + groups.get(i));
+            }
+        }catch (PatternSyntaxException ex){       //try-catch block is kept inside of method, to ensure
+            //ex.printStackTrace();               //that it will continue to work even if exception is thrown
+        }catch (IllegalStateException ex){
+            //ex.printStackTrace();
+        }
+        return groups;
     }
 }
