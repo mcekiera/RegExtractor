@@ -6,6 +6,7 @@ import java.util.TreeMap;
 public class Grouper {
     String regex;
     TreeMap<Integer,String> groups;
+    int escape;
 
     public Grouper(String regex){
         this.regex = regex;
@@ -15,12 +16,18 @@ public class Grouper {
 
     public TreeMap<Integer,String> getGroups(){
         TreeMap<Integer,StringBuilder> temp = new TreeMap<Integer,StringBuilder>();
-        int level = 0;
-        int place = 1;              // group 0 is always whole regular expression
+        int level = 0;              // to determine level of nested parenthesis, and which strings update
+        int place = 1;              // to determine 'key' for group, group 0 is always whole regular expression
+        escape = 0;             // to count backslash occurrence, to determine if it is escape for parenthesis or for
+                                    // other backslash
 
         ArrayList<StringBuilder> builders = new ArrayList<StringBuilder>();
         for(int index = 0; index < regex.length(); index++){
             String current = regex.substring(index,index+1);
+
+            if(current.equals("\\")){
+                escape++;
+            }
 
             if(isOpeningParenthesis(index)){
                 StringBuilder builder = new StringBuilder();
@@ -57,7 +64,7 @@ public class Grouper {
     }
 
     public boolean isMetacharacter(int i){
-        return (i>0 && (!regex.substring(i-1,i).equals("\\")));
+        return (i>0 && (!regex.substring(i-1,i).equals("\\")) && (escape%2==0));
     }
 
     public boolean isOpeningParenthesis(int i){
@@ -70,5 +77,9 @@ public class Grouper {
 
     public boolean isGrouping(int i){
         return !regex.substring(i,i+3).equals("(?:");
+    }
+
+    public void replaceBackreference(int index){
+
     }
 }
