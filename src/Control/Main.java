@@ -14,13 +14,13 @@ public class Main {
     Extractor extractor;
     Analyzer analyzer;
     UserInterface userInterface;
-    Explanation explanation;
+    Explanator explanator;
     Tabs tabs;
 
     Main(){
         extractor = new Extractor();
         userInterface = new UserInterface(this);
-        explanation = new Explanation();
+        explanator = new Explanator();
         tabs = Tabs.MATCH;
     }
 
@@ -41,7 +41,7 @@ public class Main {
                 userInterface.updateSplitTab(extractor.split(regex,text));
                 break;
             case DESCRIBE:
-                userInterface.diplayExplanation(explanation.explain(regex));
+                userInterface.diplayExplanation(explanator.explain(regex));
                 Grouper grouper = new Grouper(regex);
                 grouper.getGroups();
 
@@ -49,7 +49,7 @@ public class Main {
         }
 
         userInterface.updateStatus("");
-        explanation.resetIndentation();
+        explanator.resetIndentation();
     }
 
     public void analyze(String example){
