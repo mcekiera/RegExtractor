@@ -1,6 +1,5 @@
 package Model;
 
-import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,39 +31,64 @@ public class Analyzer{
      * @return TreeMap\<Integer,Integer\> with two sets of indices - for Pattern and Example Strings.
      */
 
-    public TreeMap<Integer, Integer> analyze(){
+    public TreeMap<Integer,Integer> analyze(){             // merge two versions
+        int del = regex.length()/2;
+        TreeMap<Integer,Integer> merged = new TreeMap<Integer, Integer>();
+        TreeMap<Integer,Integer> forward = analyzeForward();
+        TreeMap<Integer,Integer> backward = analyzeBackward();
+        merged.putAll(forward);
+        for(int key : backward.keySet()){
+            if(!merged.containsKey(key) && key>del || (merged.containsKey(key) && key>del && !(backward.get(key)==0))){
+                merged.put(key,backward.get(key));
+            };
+        }
+
+        return merged;
+    }
+
+    public TreeMap<Integer, Integer> analyzeForward(){
         TreeMap<Integer, Integer> divided = new TreeMap<Integer, Integer>();
-        ArrayList<Integer> matching = new ArrayList<Integer>();
-        String sample;
+
         for(int i = 0; i <= regex.length() ; i++){    // int i decide about length of substring
             try{
-                matching.add(0,i);
-                sample = regex.substring(0,i);                                                   //try-catch block is kept inside of method, to ensure
-                pattern = Extractor.getPattern(sample,Extractor.getOption());       //that it will continue to work even if exception is thrown
+                pattern = Pattern.compile(regex.substring(0,i));
                 matcher = pattern.matcher(example);
                 matcher.find();
                 divided.put(i, matcher.end());
-
-
-
-               //if(matching.size()>=2) divided = checkForGrouping(divided,sample,matching.get(0),matching.get(1));
-
-            }catch (PatternSyntaxException ex){
-                exceptionMessage(ex);
+            }catch (PatternSyntaxException ex){       //try-catch block is kept inside of method, to ensure
+                //ex.printStackTrace();               //that it will continue to work even if exception is thrown
             }catch (IllegalStateException ex){
-                exceptionMessage(ex);
+                //ex.printStackTrace();
             }
         }
-        System.out.println(divided.keySet().toString());
-        System.out.println(divided.values().toString());
-
         divided = checkForEndOfALina(divided);
         divided = checkForBeginningOfALina(divided);
-        divided = checkForGrouping(divided);
 
-        System.out.println(divided.keySet().toString());
-        System.out.println(divided.values().toString());
+        System.out.println();
 
+        return divided;
+    }
+
+    public TreeMap<Integer, Integer> analyzeBackward(){
+        TreeMap<Integer, Integer> divided = new TreeMap<Integer, Integer>();
+
+        for(int i = regex.length(); i >= 0 ; i--){    // int i decide about length of substring
+            try{
+                pattern = Pattern.compile(regex.substring(i)+"$");
+                matcher = pattern.matcher(example);
+                matcher.find();
+                if(i == regex.length() && matcher.start()==0){
+                    divided.put(i, example.length());
+                    continue;
+                }
+                divided.put(i, matcher.start());
+            }catch (PatternSyntaxException ex){       //try-catch block is kept inside of method, to ensure
+                //ex.printStackTrace();               //that it will continue to work even if exception is thrown
+            }catch (IllegalStateException ex){
+                //ex.printStackTrace();
+            }
+        }
+        divided = checkForEndOfALina(divided);
         return divided;
     }
 
@@ -77,7 +101,6 @@ public class Analyzer{
     public TreeMap<Integer,Integer> checkForEndOfALina(TreeMap<Integer,Integer> toCheck){
         if(regex.endsWith("$")){
             int lastMatch = getLastMatch();
-            System.out.println(lastMatch);
             for(int i : toCheck.keySet()){                                    //loop ensure that only one index will
                 if(toCheck.get(i)==example.length() && i!=regex.length()){    //be the last index of last character
                     toCheck.put(i,lastMatch);                                 //in pattern
@@ -106,9 +129,7 @@ public class Analyzer{
                     return matcher.start();
                 }
 
-            }catch (PatternSyntaxException ex){
-                exceptionMessage(ex);
-            }catch (IllegalStateException ex){
+            }catch (Exception ex){
                 exceptionMessage(ex);
             }
         }
@@ -131,58 +152,4 @@ public class Analyzer{
     public static void exceptionMessage(Exception ex){
         //System.out.println(ex.getClass() + " is expected as part of program flow");
     }
-
-    public boolean isEndingWithGroup(String expression){
-
-        String end = expression.substring(expression.length()-2,expression.length());
-        return end.startsWith("\\") && Character.isDigit(end.charAt(1));
-    }
-
-    public boolean isProceededByGroup(String expression){
-        return expression.length() > 3 && isEndingWithGroup(expression) && isEndingWithGroup(expression.substring(0, expression.length() - 2));
-    }
-
-    public int getGroup(String regex){
-        return Integer.parseInt(regex.substring(regex.length()-1));
-    }
-
-    public TreeMap<Integer,Integer> checkForGrouping(TreeMap<Integer,Integer> map){
-        ArrayList<Integer> vals = new ArrayList<Integer>(map.values());
-        ArrayList<Integer> keys = new ArrayList<Integer>(map.keySet());
-        int p = 0;
-        for(int i = 1; i < map.size(); i++){
-            if(vals.get(i) < vals.get(i-1)){
-
-                int range = vals.get(i) - vals.get(i-2);
-                String patterns = regex.substring(0,keys.get(i-2))+regex.substring(keys.get(i-1));
-                Pattern pattern = Pattern.compile(patterns);
-
-                System.out.println(patterns);
-                System.out.println(range);
-                System.out.println(p++);
-
-                for(int k = 0; k < range; k++){
-                    try{
-
-                        String sample = example.substring(0,vals.get(i-2)) + example.substring(vals.get(i-2)+k);
-                        System.out.println(sample);
-                        Matcher matcher = pattern.matcher(sample);
-                        matcher.find();                                       //todo reverse plus this? kiedy dochodzi do grupowania, zaczyna od tyłu, az dojdzie do odpowiedniego indeksu i go zasąpi, póxniej sprawdzać wartości
-                        map.put(keys.get(i-1),vals.get(i-2)+k);
-                        System.out.println("yatta!" + k);
-                        System.out.println(keys.get(i-1) + "," + (vals.get(i-2)+k));
-
-                    }catch (PatternSyntaxException ex){
-                        exceptionMessage(ex);
-                    }catch (IllegalStateException ex){
-                        exceptionMessage(ex);
-                    }
-                }
-            }
-        }
-        return map;
-    }
-
-
-
 }

@@ -45,7 +45,7 @@ public class Grouper {
                 level --;
             }
         }
-
+        /*
         for(StringBuilder srt : builders){
             System.out.println(srt.toString() +"   "+ srt.indexOf(srt.toString()));
         }
@@ -53,6 +53,7 @@ public class Grouper {
         for(int key : temp.keySet()){
             System.out.println(key + "     "  + temp.get(key).toString());
         }
+        */
 
         groups = new TreeMap<Integer, String>();
         groups.put(0, regex);
@@ -80,6 +81,6 @@ public class Grouper {
     }
 
     public void replaceBackreference(int index){
-
+        //todo replace \\1 with group(1)
     }
 }
