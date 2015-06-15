@@ -16,6 +16,7 @@ public class Main {
     UserInterface userInterface;
     Explanator explanator;
     Tabs tabs;
+    Grouper grouper;
 
     Main(){
         extractor = new Extractor();
@@ -42,7 +43,7 @@ public class Main {
                 break;
             case DESCRIBE:
                 userInterface.displayExplanation(explanator.explain(regex));
-                Grouper grouper = new Grouper(regex);
+                grouper = new Grouper(regex);
                 grouper.getGroups();
 
                 break;

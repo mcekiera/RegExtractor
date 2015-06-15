@@ -11,16 +11,16 @@ public class Analyzer{
     Pattern pattern;
     Matcher matcher;
     TreeMap<Integer,String> groups;
-    String temp = "";
     int count;
-    String altered;
+    Grouper grouper;
 
     public Analyzer(String regex, String analyzed){
         this.regex = regex;
         this.example = analyzed;
         groups = getGroups();
         count = 0;
-        //altered = getProperSample();
+        grouper = new Grouper(regex);
+        this.regex = trimLookaround(regex);
     }
 
     /**
@@ -212,4 +212,16 @@ public class Analyzer{
         }
         return groups;
     }
+
+    public static String trimLookaround(String regex){
+        Grouper trimmer = new Grouper(regex);
+        for(int key : trimmer.getGroups().keySet()){
+            if(trimmer.getGroups().get(key).matches("(\\(\\?[=!<][=!]*[^\\)]+\\))")){
+                regex = regex.replaceAll("(\\(\\?[=!<][=!]*[^\\)]+\\))", "");
+            }
+            System.out.println(regex);
+        }
+        return regex;
+    }
+
 }

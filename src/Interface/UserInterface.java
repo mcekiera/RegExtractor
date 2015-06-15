@@ -1,6 +1,7 @@
 package Interface;
 
 import Control.Main;
+import Model.Analyzer;
 import Model.Options;
 
 import javax.swing.*;
@@ -237,7 +238,7 @@ public class UserInterface {
     }
 
     public void updateAnalyzer(String regex,String example){
-        regexView.setText(regex);
+        regexView.setText(Analyzer.trimLookaround(regex));
         exampleView.setText(example);
     }
 
