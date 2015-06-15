@@ -47,8 +47,8 @@ public class Analyzer{
         TreeMap<Integer,Integer> backward = analyzeBackward();
         merged.putAll(forward);
         for(int key : backward.keySet()){
-            if((!merged.containsKey(key) && key>del) || (merged.containsKey(key) && key>del && !(backward.get(key)==0))
-                    || merged.containsKey(key) && forward.get(key)==example.length()){
+            if((!(backward.get(key)==0))
+                    && merged.containsKey(key) && forward.get(key)==example.length()){
                 merged.put(key,backward.get(key));
             };
         }
@@ -119,8 +119,10 @@ public class Analyzer{
     public String getProperSample(String str){
         String sample = str;
         for(int key : groups.keySet()){
-            String temp = "(" + groups.get(key).replace("\\","\\\\\\\\") + ")";         //this is a crucial part to replece single "\"!!!
-            sample = sample.replaceAll("\\\\"+key, temp);
+            if(groups.get(key)!=null){
+                String temp = "(" + groups.get(key).replace("\\","\\\\\\\\") + ")";         //this is a crucial part to replece single "\"!!!
+                sample = sample.replaceAll("\\\\"+key, temp);
+            }
         }
         System.out.println(sample);
         return sample;

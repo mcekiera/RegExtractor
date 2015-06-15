@@ -29,7 +29,7 @@ public class Explanator{
         builder = new StringBuilder();
 
         for(int i = 0; i < regex.length(); i++){
-            up = 0;                                     // if matching character is not special, there is no need to
+            up = 0;                                     // up = 0 because if matching character is not special, there is no need to
             String fragment = regex.substring(i,i+1);   // change int i value, and skip indices of regular expression
 
             if(isInsideCharClass()){

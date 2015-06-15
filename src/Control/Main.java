@@ -41,7 +41,7 @@ public class Main {
                 userInterface.updateSplitTab(extractor.split(regex,text));
                 break;
             case DESCRIBE:
-                userInterface.diplayExplanation(explanator.explain(regex));
+                userInterface.displayExplanation(explanator.explain(regex));
                 Grouper grouper = new Grouper(regex);
                 grouper.getGroups();
 

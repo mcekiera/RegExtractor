@@ -197,6 +197,7 @@ public class UserInterface {
     }
 
     public void highlightMatchedText(TreeMap<Integer,Integer> toHighlight){
+        highlighter.removeAllHighlights();
         for (int index : toHighlight.keySet()) {
             try {
                 highlighter.addHighlight(index, toHighlight.get(index), getPainter());
@@ -206,7 +207,7 @@ public class UserInterface {
         }
     }
 
-    public void diplayExplanation(String description){
+    public void displayExplanation(String description){
          explain.setText(description);
     }
 
@@ -219,6 +220,7 @@ public class UserInterface {
 
     public void highlightAnalyzedElements(TreeMap<Integer, Integer> elements){
         int r = 0;
+        highlighter.removeAllHighlights();
         Highlighter.HighlightPainter pointer;
         for(int i : elements.keySet()){
             pointer = getPainter();
@@ -240,9 +242,9 @@ public class UserInterface {
     }
 
     public void updateExamples(){
-        examples.removeAllElements();
+        examples.clear();
         for(Highlighter.Highlight light : highlighter.getHighlights()){
-            examples.addElement(matcherView.getText().substring(light.getStartOffset(), light.getEndOffset()));
+           examples.addElement(matcherView.getText().substring(light.getStartOffset(), light.getEndOffset()));
         }
     }
 
