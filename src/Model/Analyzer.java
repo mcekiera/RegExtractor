@@ -45,11 +45,16 @@ public class Analyzer{
         TreeMap<Integer,Integer> merged = new TreeMap<Integer, Integer>();
         TreeMap<Integer,Integer> forward = analyzeForward();
         TreeMap<Integer,Integer> backward = analyzeBackward();
-        merged.putAll(forward);
-        for(int key : backward.keySet()){
-            if((!(backward.get(key)==0))
-                    && merged.containsKey(key) && forward.get(key)==example.length()){
-                merged.put(key,backward.get(key));
+        merged.putAll(backward);
+        upper: for(int key : forward.keySet()){
+            if(backward.get(key) == null){
+                for(int i : backward.keySet()){
+                    if(i > key & backward.get(i)!=0 && backward.get(i)<forward.get(key)){
+                        continue upper;
+                    }
+                }
+                merged.put(key,forward.get(key));
+                System.out.println("put");
             };
         }
         System.out.println(forward.keySet().toString());
@@ -118,13 +123,16 @@ public class Analyzer{
      */
     public String getProperSample(String str){
         String sample = str;
-        for(int key : groups.keySet()){
-            if(groups.get(key)!=null){
-                String temp = "(" + groups.get(key).replace("\\","\\\\\\\\") + ")";         //this is a crucial part to replece single "\"!!!
-                sample = sample.replaceAll("\\\\"+key, temp);
+        if(str.length()>1 && str.substring(0,2).matches("\\\\\\d")){
+            System.out.println("inside");
+            for(int key : groups.keySet()){
+                if(groups.get(key)!=null){
+                    String temp = "(" + groups.get(key).replace("\\","\\\\\\\\") + ")";         //this is a crucial part to replece single "\"!!!
+                    sample = sample.replaceAll("\\\\"+key, temp);
+                }
             }
         }
-        System.out.println(sample);
+        //TODO: named groups
         return sample;
     }
 
@@ -169,7 +177,7 @@ public class Analyzer{
                 exceptionMessage(ex);
             }
         }
-        return regex.length();
+        return example.length();
     }
 
     /**
@@ -216,10 +224,9 @@ public class Analyzer{
     public static String trimLookaround(String regex){
         Grouper trimmer = new Grouper(regex);
         for(int key : trimmer.getGroups().keySet()){
-            if(trimmer.getGroups().get(key).matches("(\\(\\?[=!<][=!]*[^\\)]+\\))")){
-                regex = regex.replaceAll("(\\(\\?[=!<][=!]*[^\\)]+\\))", "");
+            if(trimmer.getGroups().get(key).matches("(\\(\\?([=]|[=!<][=!])[^\\)]+\\))")){
+                regex = regex.replaceAll("(\\(\\?([=]|[=!<][=!])[^\\)]+\\))", "");
             }
-            System.out.println(regex);
         }
         return regex;
     }

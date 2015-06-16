@@ -102,7 +102,7 @@ public class Explanator{
                 return closingBracket(character);
 
             case QUESTION_MARK:
-                return "??";
+                return matchQuestionMark(i);
             case END_OF_LINE:
                 return matchBeginningOrEnd(i);
             case AND:
@@ -174,6 +174,20 @@ public class Explanator{
 
     private String closingBracket(String character){
         indent = indent.substring(0, indent.length()-8);
+        return character + "  -  " + description.get(character);
+    }
+
+    private String matchQuestionMark(int index){
+        String character = expression.substring(index,index+1);
+        if(expression.substring(index,index+3).matches("\\?[=!<>][=!]")){
+            System.out.println(expression.substring(index,index+3));
+            up+=2;
+            return expression.substring(index,index+3) + "  -  " + description.get(expression.substring(index,index+3));
+        }else if(expression.substring(index,index+2).matches("\\?[=!<>:]")){
+            System.out.println(expression.substring(index,index+2));
+            up+=1;
+            return expression.substring(index,index+2) + "  -  " + description.get(expression.substring(index,index+2));
+        }
         return character + "  -  " + description.get(character);
     }
 

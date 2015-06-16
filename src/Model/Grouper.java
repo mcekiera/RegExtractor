@@ -65,7 +65,7 @@ public class Grouper {
     }
 
     public boolean isMetacharacter(int i){
-        return (i>0 && (!regex.substring(i-1,i).equals("\\")) && (escape%2==0));
+        return (i>0 && (!regex.substring(i-1,i).equals("\\")));// && (escape%2==0));
     }
 
     public boolean isOpeningParenthesis(int i){
@@ -78,9 +78,5 @@ public class Grouper {
 
     public boolean isGrouping(int i){
         return !regex.substring(i,i+3).equals("(?:");
-    }
-
-    public void replaceBackreference(int index){
-        //todo replace \\1 with group(1)
     }
 }

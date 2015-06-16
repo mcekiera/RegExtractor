@@ -31,6 +31,12 @@ $    The end of a line. Matching for character: $
 ]    end of a range
 (    start of a group
 )    end of a group
+?=    Positive look ahead
+?!    Negative look ahead
+?<=    Positive look behind
+?<!    Negative look behind
+?>    Atomic group
+?:    Non-capturing group
 \p{Lower}    A lower-case alphabetic character: [a-z]
 \p{Upper}    An upper-case alphabetic character:[A-Z]
 \p{ASCII}    All ASCII:[\x00-\x7F]

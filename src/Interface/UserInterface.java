@@ -2,7 +2,6 @@ package Interface;
 
 import Control.Main;
 import Model.Analyzer;
-import Model.Options;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -33,7 +32,6 @@ public class UserInterface {
     private Highlighter forExample;
     private Main main;
     private Font font;
-    JTextArea textToSplit;
     JTextArea splittedText;
     JTabbedPane tab;
     JTextArea explain;
@@ -167,10 +165,10 @@ public class UserInterface {
 
     public JTextField buildStatusBar(){
         statusBar = new JTextField();
-        statusBar.setEnabled(false);
+        statusBar.setEditable(false);
         return statusBar;
     }
-
+    /*
     public JPanel buildSidePanel(){
         JPanel panel = new JPanel();
 
@@ -184,6 +182,7 @@ public class UserInterface {
         panel.add(combo);
         return panel;
     }
+    */
 
     public void updateStatus(String message){
         statusBar.setText(message);
@@ -221,7 +220,6 @@ public class UserInterface {
 
     public void highlightAnalyzedElements(TreeMap<Integer, Integer> elements){
         int r = 0;
-        highlighter.removeAllHighlights();
         Highlighter.HighlightPainter pointer;
         for(int i : elements.keySet()){
             pointer = getPainter();
@@ -229,7 +227,7 @@ public class UserInterface {
                 forExample.addHighlight(elements.get(r),elements.get(i),pointer);
                 forPattern.addHighlight(r,i,pointer);
             }catch (BadLocationException ex){
-                System.out.println(ex.toString() + "BadLocationException is expected" + ex.getCause());
+                System.out.println(ex.toString() + "BadLocationException is expected");
                 //ex.printStackTrace();
             }
             r = i;
@@ -240,6 +238,7 @@ public class UserInterface {
     public void updateAnalyzer(String regex,String example){
         regexView.setText(Analyzer.trimLookaround(regex));
         exampleView.setText(example);
+        isNotSupported(regex);
     }
 
     public void updateExamples(){
@@ -283,6 +282,21 @@ public class UserInterface {
         public void changedUpdate(DocumentEvent e) {
             resetView();
             main.updateMatchView();
+        }
+    }
+    public void isNotSupported(String regex){
+        String warning = "";
+        if(regex.contains("??") || regex.contains("*?") || regex.contains("+?") || regex.contains("?+")
+                || regex.contains("*+") || regex.contains("++") || regex.contains("}+") || regex.contains("?+")){
+            warning += "Reluctant and possessive quantifiers. ";
+        }
+        if(regex.contains("(?<")){
+
+            warning += "Named groups.";
+        }
+
+        if(warning.length()>0){
+        updateStatus("Analyzer does not support: " + warning + " Visualization could show wrong results!");
         }
     }
 }

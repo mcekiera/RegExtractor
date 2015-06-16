@@ -3,11 +3,11 @@ package Control;
 
 import Interface.Tabs;
 import Interface.UserInterface;
-import Model.*;
+import Model.Analyzer;
+import Model.Explanator;
+import Model.Extractor;
+import Model.Grouper;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.TreeMap;
 
 public class Main {
@@ -63,25 +63,10 @@ public class Main {
         }
 
         analyzer = new Analyzer(regex,example);
-        TreeMap analyzed = analyzer.analyze();
+        TreeMap<Integer,Integer> analyzed = analyzer.analyze();
 
 
         userInterface.highlightAnalyzedElements(analyzed);
-    }
-
-    public PatternOptions getAction(){
-        return new PatternOptions();
-    }
-
-    class PatternOptions implements ActionListener{
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            JComboBox<Options> temp = (JComboBox<Options>)(e.getSource());
-            extractor.setOptions((Options)temp.getSelectedItem());
-            updateMatchView();
-
-        }
     }
 
     public void setTabs(Tabs tab){

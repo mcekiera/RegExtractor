@@ -7,7 +7,6 @@ import java.util.regex.PatternSyntaxException;
 
 public class Extractor{
     private Pattern pattern;
-    private Matcher matcher;
     private static Options options = Options.NULL;
 
     public TreeMap<Integer,Integer> search(String regex, String input){
@@ -17,10 +16,10 @@ public class Extractor{
 
         try{
             pattern = getPattern(regex,options);
-            matcher = pattern.matcher(input);
+            Matcher matcher = pattern.matcher(input);
 
             while(matcher.find()){
-                    indices.put(matcher.start(),matcher.end());       // todo map is used, so it not allow empty spaces!!
+                    indices.put(matcher.start(), matcher.end());       // todo map is used, so it not allow empty spaces!!
             }
 
         }catch (PatternSyntaxException ex){
@@ -53,7 +52,4 @@ public class Extractor{
         return options;
     }
 
-    public void setOptions(Options options){
-        this.options = options;
-    }
 }
