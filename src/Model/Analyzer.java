@@ -1,5 +1,7 @@
 package Model;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,28 +43,26 @@ public class Analyzer{
      * @return
      */
     public TreeMap<Integer,Integer> analyze(){             // merge two versions
-        int del = regex.length()/2;
         TreeMap<Integer,Integer> merged = new TreeMap<Integer, Integer>();
         TreeMap<Integer,Integer> forward = analyzeForward();
         TreeMap<Integer,Integer> backward = analyzeBackward();
         merged.putAll(backward);
-        upper: for(int key : forward.keySet()){
-            if(backward.get(key) == null){
-                for(int i : backward.keySet()){
-                    if(i > key & backward.get(i)!=0 && backward.get(i)<forward.get(key)){
-                        continue upper;
-                    }
-                }
-                merged.put(key,forward.get(key));
-                System.out.println("put");
-            };
+        merged.putAll(forward);
+        for(int key : backward.keySet()){
+            if((!(backward.get(key)==0))
+                    && merged.containsKey(key) && forward.get(key)==example.length()){
+                merged.put(key,backward.get(key));
+            }
         }
-        System.out.println(forward.keySet().toString());
-        System.out.println(forward.values().toString());
-        System.out.println(backward.keySet().toString());
-        System.out.println(backward.values().toString());
-        System.out.println(merged.keySet().toString());
-        System.out.println(merged.values().toString());
+        System.out.println("forward " + forward.keySet().toString());
+        System.out.println("forward " + forward.values().toString());
+        System.out.println("backward " + backward.keySet().toString());
+        System.out.println("backward " + backward.values().toString());
+        System.out.println("merged " + merged.keySet().toString());
+        System.out.println("merged " + merged.values().toString());
+        merged = validate(merged);
+        System.out.println("validated " + merged.keySet().toString());
+        System.out.println("validated " + merged.values().toString());
 
         return merged;
     }
@@ -92,7 +92,6 @@ public class Analyzer{
 
     public TreeMap<Integer, Integer> analyzeBackward(){
         TreeMap<Integer, Integer> divided = new TreeMap<Integer, Integer>();
-        String sample;
         for(int i = regex.length(); i >= 0 ; i--){    // int i decide about length of substring
             try{
                 String temp = getProperSample(regex.substring(i));
@@ -231,4 +230,24 @@ public class Analyzer{
         return regex;
     }
 
+
+
+    public TreeMap<Integer,Integer> validate(TreeMap<Integer,Integer> sample){
+        ArrayList<Integer> keys = new ArrayList<Integer>(sample.keySet());
+        Collections.reverse(keys);
+
+        int lastValue = example.length();
+        int lastKey = regex.length();
+
+        for(int key : keys){
+            if(sample.get(key) > lastValue){
+                sample.put(key,lastValue);
+                System.out.println(key + "\\" + sample.get(key) + "\\" + lastKey + "\\" + lastValue);
+            }
+            lastValue = sample.get(key);
+            lastKey = key;
+        }
+
+        return sample;
+    }
 }

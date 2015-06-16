@@ -294,9 +294,13 @@ public class UserInterface {
 
             warning += "Named groups.";
         }
+        if(regex.contains("(?=") || regex.contains("(?!") || regex.contains("(?<=") || regex.contains("(?<!")){
+           warning += "Look ahead and look behind matches.";
+        }
 
         if(warning.length()>0){
         updateStatus("Analyzer does not support: " + warning + " Visualization could show wrong results!");
         }
     }
+
 }
