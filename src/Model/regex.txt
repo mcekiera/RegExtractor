@@ -1,9 +1,15 @@
 .    Any character
 ^    The beginning of a line. Negation of next statement
 $    The end of a line. Matching for character: $
-?    Once or not at all
-*    Zero or more times
-+    One or more times
+?    Once or not at all (greedy)
+?+    Once or not at all (reluctant)
+??    Once or not at all (possessive)
+*    Zero or more times (greedy)
+*?    Zero or more times (reluctant)
+*+    Zero or more times (possessive)
++    One or more times (greedy)
++?    One or more times (reluctant)
+++    One or more times (possessive)
 &&    and
 |    or
 \d    A digit: [0-9]
@@ -25,12 +31,12 @@ $    The end of a line. Matching for character: $
 \Z    The end of the input but for the final terminator,if any
 \z    The end of the input
 \    The backslash escape character
-{    opening of repetition range
-}    ending of repetition range
-[    beginning of a range
-]    end of a range
-(    start of a group
-)    end of a group
+{    opening of interval
+}    closing of interval
+[    opening of a range
+]    closing of a range
+(    opening of a group
+)    closing of a group
 ?=    Positive look ahead
 ?!    Negative look ahead
 ?<=    Positive look behind

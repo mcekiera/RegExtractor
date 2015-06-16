@@ -6,7 +6,6 @@ import Interface.UserInterface;
 import Model.Analyzer;
 import Model.Explanator;
 import Model.Extractor;
-import Model.Grouper;
 
 import java.util.TreeMap;
 
@@ -16,7 +15,6 @@ public class Main {
     UserInterface userInterface;
     Explanator explanator;
     Tabs tabs;
-    Grouper grouper;
 
     Main(){
         extractor = new Extractor();
@@ -43,8 +41,6 @@ public class Main {
                 break;
             case DESCRIBE:
                 userInterface.displayExplanation(explanator.explain(regex));
-                grouper = new Grouper(regex);
-                grouper.getGroups();
 
                 break;
         }

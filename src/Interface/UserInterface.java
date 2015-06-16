@@ -32,9 +32,9 @@ public class UserInterface {
     private Highlighter forExample;
     private Main main;
     private Font font;
-    JTextArea splittedText;
-    JTabbedPane tab;
-    JTextArea explain;
+    private JTextArea splittedText;
+    private JTabbedPane tab;
+    private JTextArea explain;
 
     public UserInterface(Main main){
 

@@ -8,21 +8,19 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 public class Analyzer{
-    String regex;
-    String example;
-    Pattern pattern;
-    Matcher matcher;
-    TreeMap<Integer,String> groups;
-    int count;
-    Grouper grouper;
+    private String regex;
+    private String example;
+    private Pattern pattern;
+    private Matcher matcher;
+    private static TreeMap<Integer,String> groups;
+    private Grouper grouper;
 
     public Analyzer(String regex, String analyzed){
         this.regex = regex;
         this.example = analyzed;
-        groups = getGroups();
-        count = 0;
-        grouper = new Grouper(regex);
         this.regex = trimLookaround(regex);
+        grouper = new Grouper();
+        groups = grouper.getExampleGroups(regex,example);
     }
 
     /**
@@ -40,7 +38,7 @@ public class Analyzer{
      */
     /**
      * analyze składa się teraz z dwóch elementów, analizy od przodu i od tyłu, później wyniki są łączone
-     * @return
+     * @return a
      */
     public TreeMap<Integer,Integer> analyze(){             // merge two versions
         TreeMap<Integer,Integer> merged = new TreeMap<Integer, Integer>();
@@ -60,14 +58,18 @@ public class Analyzer{
         System.out.println("backward " + backward.values().toString());
         System.out.println("merged " + merged.keySet().toString());
         System.out.println("merged " + merged.values().toString());
+
         merged = validate(merged);
+        merged = checkForEndOfALina(merged);
+        merged = checkForBeginningOfALina(merged);
+
         System.out.println("validated " + merged.keySet().toString());
         System.out.println("validated " + merged.values().toString());
 
         return merged;
     }
 
-    public TreeMap<Integer, Integer> analyzeForward(){
+    private TreeMap<Integer, Integer> analyzeForward(){
         TreeMap<Integer, Integer> divided = new TreeMap<Integer, Integer>();
 
         for(int i = 0; i <= regex.length() ; i++){    // int i decide about length of substring
@@ -82,15 +84,13 @@ public class Analyzer{
                 //ex.printStackTrace();
             }
         }
-        divided = checkForEndOfALina(divided);
-        divided = checkForBeginningOfALina(divided);
 
         System.out.println();
 
         return divided;
     }
 
-    public TreeMap<Integer, Integer> analyzeBackward(){
+    private TreeMap<Integer, Integer> analyzeBackward(){
         TreeMap<Integer, Integer> divided = new TreeMap<Integer, Integer>();
         for(int i = regex.length(); i >= 0 ; i--){    // int i decide about length of substring
             try{
@@ -117,10 +117,11 @@ public class Analyzer{
     /**
      * zmienia fragmenty zwiazane z powtarzeniem schwytanego wzoru: /1/2/3 na schwytane fragmenty, tak by dopasowało
      * dokładnie to samo
-     * @param str
-     * @return
+     * @param str  a
+     * @return a
      */
-    public String getProperSample(String str){
+    private String getProperSample(String str){
+
         String sample = str;
         if(str.length()>1 && str.substring(0,2).matches("\\\\\\d")){
             System.out.println("inside");
@@ -131,7 +132,7 @@ public class Analyzer{
                 }
             }
         }
-        //TODO: named groups
+        //TODO: named patternsGroups
         return sample;
     }
 
@@ -141,7 +142,7 @@ public class Analyzer{
      * @param toCheck TreeMap with indexes of matched pattern-example set,
      * @return TreeMap toCheck, modified if pattern ends with "$".
      */
-    public TreeMap<Integer,Integer> checkForEndOfALina(TreeMap<Integer,Integer> toCheck){
+    private TreeMap<Integer,Integer> checkForEndOfALina(TreeMap<Integer,Integer> toCheck){
         if(regex.endsWith("$")){
             int lastMatch = getLastMatch();
             for(int i : toCheck.keySet()){                                    //loop ensure that only one index will
@@ -160,7 +161,7 @@ public class Analyzer{
      * fragment of text.
      * @return index of first character in text, which match with "end of line" sub-pattern.
      */
-    public int getLastMatch(){
+    private int getLastMatch(){
 
         for(int i = regex.length(); i >= 0 ; i--){    // int i decide about length of substring
             try{
@@ -185,7 +186,7 @@ public class Analyzer{
      * @param toCheck TreeMap with indexes of matched pattern-example set
      * @return TreeMap to Check, modified if pattern ends with "^".
      */
-    public TreeMap<Integer,Integer> checkForBeginningOfALina(TreeMap<Integer,Integer> toCheck){
+    private TreeMap<Integer,Integer> checkForBeginningOfALina(TreeMap<Integer,Integer> toCheck){
         if(regex.startsWith("^")){
             toCheck.remove(1,0);
         }
@@ -193,46 +194,28 @@ public class Analyzer{
     }
 
     public static void exceptionMessage(Exception ex){
-        //System.out.println(ex.getClass() + " is expected as part of program flow");
+        System.out.println(ex.getClass());
     }
 
 
     /**
      * chyba wypadało by przenieś tę metodę do groupera, ewentualnie przerobić go na static
-     * @return
+     * @return  a
      */
-    public TreeMap<Integer,String> getGroups(){
-        TreeMap<Integer,String> groups = new TreeMap<Integer, String>();
-        try{
-            pattern = Pattern.compile(regex);
-            matcher = pattern.matcher(example);
-            matcher.find();
-            groups.put(0,regex);
-            for(int i = 1; i <= matcher.groupCount(); i++){
-                groups.put(i,matcher.group(i));
-                System.out.println(i + "   " + groups.get(i));
-            }
-        }catch (PatternSyntaxException ex){       //try-catch block is kept inside of method, to ensure
-            //ex.printStackTrace();               //that it will continue to work even if exception is thrown
-        }catch (IllegalStateException ex){
-            //ex.printStackTrace();
-        }
-        return groups;
-    }
 
+    //TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!1
     public static String trimLookaround(String regex){
-        Grouper trimmer = new Grouper(regex);
-        for(int key : trimmer.getGroups().keySet()){
-            if(trimmer.getGroups().get(key).matches("(\\(\\?([=]|[=!<][=!])[^\\)]+\\))")){
+        Grouper grouper = new Grouper();
+        TreeMap<Integer,String> groups = grouper.getPatternsGroups(regex);
+        for(int key : groups.keySet()){
+            if(groups.get(key).matches("(\\(\\?([=]|[=!<][=!])[^\\)]+\\))")){
                 regex = regex.replaceAll("(\\(\\?([=]|[=!<][=!])[^\\)]+\\))", "");
             }
         }
         return regex;
     }
 
-
-
-    public TreeMap<Integer,Integer> validate(TreeMap<Integer,Integer> sample){
+    private TreeMap<Integer,Integer> validate(TreeMap<Integer,Integer> sample){
         ArrayList<Integer> keys = new ArrayList<Integer>(sample.keySet());
         Collections.reverse(keys);
 
