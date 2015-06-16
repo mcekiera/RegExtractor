@@ -1,6 +1,7 @@
 package Model;
 
-import java.io.*;
+import Control.IO;
+
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -14,7 +15,7 @@ public class Explanator{
     private int skipIndices;
 
     public Explanator(){
-        description = loadElements();
+        description = IO.load();
         indent = "  ";
     }
 
@@ -142,7 +143,7 @@ public class Explanator{
             skipIndices = expression.substring(i,expression.indexOf("}",i)+1).length();
             return expression.substring(i,expression.indexOf("}",i)+1) + "  -  "
                     + description.get(expression.substring(i,expression.indexOf("}",i)+1));
-        }else if(Character.isDigit(expression.charAt(i+1))){
+        }else if(Character.isDigit(expression.charAt(i + 1))){
             skipIndices++;
             return expression.substring(i,i+2) + "  -  " + "backreference to captured group: " +
                     new Grouper().getPatternsGroups(expression).get(Integer.parseInt(expression.substring(i+1,i+2)));
@@ -252,25 +253,6 @@ public class Explanator{
 
     private boolean isMetacharacterInCharacterClass(int i){
         return Arrays.asList(metaInCharClass).contains(expression.substring(i, i+1));
-    }
-
-    private HashMap<String, String> loadElements(){
-        HashMap<String, String> elements = new HashMap<String,String>();
-        File file = new File("src\\Model\\regex.txt");
-        try{
-            String line;
-            BufferedReader reader = new BufferedReader(new FileReader(file));
-            while((line = reader.readLine()) != null){
-                String[] temp = line.split("    ");
-                elements.put(temp[0],temp[1]);
-            }
-
-        }catch (FileNotFoundException ex){
-            ex.printStackTrace();
-        }catch (IOException ex){
-            ex.printStackTrace();
-        }
-        return elements;
     }
 
     public boolean isOpening(String substring){
