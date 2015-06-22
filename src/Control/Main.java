@@ -15,12 +15,15 @@ public class Main {
     UserInterface userInterface;
     Explanator explanator;
     Tabs tabs;
+    IO io;
 
     Main(){
+        io = new IO();
         extractor = new Extractor();
         userInterface = new UserInterface(this);
         explanator = new Explanator();
         tabs = Tabs.MATCH;
+
     }
 
     public void updateMatchView(){
@@ -41,7 +44,9 @@ public class Main {
                 break;
             case DESCRIBE:
                 userInterface.displayExplanation(explanator.explain(regex));
-
+                break;
+            case GROUPS:
+                userInterface.updateExamples();
                 break;
         }
 

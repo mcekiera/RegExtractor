@@ -13,14 +13,13 @@ public class Analyzer{
     private Pattern pattern;
     private Matcher matcher;
     private static TreeMap<Integer,String> groups;
-    private Grouper grouper;
 
     public Analyzer(String regex, String analyzed){
         this.regex = regex;
         this.example = analyzed;
         this.regex = trimLookaround(regex);
-        grouper = new Grouper();
-        groups = grouper.getExampleGroups(regex,example);
+        Grouper grouper = new Grouper();
+        groups = grouper.getExampleGroups(regex, example);
     }
 
     /**
@@ -44,7 +43,6 @@ public class Analyzer{
         TreeMap<Integer,Integer> merged = new TreeMap<Integer, Integer>();
         TreeMap<Integer,Integer> forward = analyzeForward();
         TreeMap<Integer,Integer> backward = analyzeBackward();
-        merged.putAll(backward);
         merged.putAll(forward);
         for(int key : backward.keySet()){
             if((!(backward.get(key)==0))

@@ -2,21 +2,23 @@ package Control;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.TreeMap;
 
 public class IO {
-    static private HashMap<String,String> description;
+    static private TreeMap<String,String> description;
 
     public IO(){
-        description = loadElements();
+        description = new TreeMap<String, String>(loadElements());
     }
 
-    public static HashMap<String,String> load(){
+    public static TreeMap<String,String> load(){
         return description;
     }
 
-    private static HashMap<String, String> loadElements(){
+    private HashMap<String, String> loadElements(){
+        System.out.println("loaded!");
         HashMap<String, String> elements = new HashMap<String,String>();
-        File file = new File("\\Control\\regex.txt");
+        File file = new File("C:\\Users\\Pacin\\IdeaProjects\\RegExtractor\\src\\Control\\regex.txt");
         try{
             String line;
             BufferedReader reader = new BufferedReader(new FileReader(file));

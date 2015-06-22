@@ -1,36 +1,36 @@
-.    Any character
-^    The beginning of a line. Negation of next statement
-$    The end of a line. Matching for character: $
-?    Once or not at all (greedy)
-?+    Once or not at all (reluctant)
-??    Once or not at all (possessive)
-*    Zero or more times (greedy)
-*?    Zero or more times (reluctant)
-*+    Zero or more times (possessive)
-+    One or more times (greedy)
-+?    One or more times (reluctant)
-++    One or more times (possessive)
+.    any character
+^    the beginning of a line. Negation of next statement
+$    the end of a line. Matching for character: $
+?    once or not at all (greedy)
+?+    once or not at all (reluctant)
+??    once or not at all (possessive)
+*    zero or more times (greedy)
+*?    zero or more times (reluctant)
+*+    zero or more times (possessive)
++    one or more times (greedy)
++?    one or more times (reluctant)
+++    one or more times (possessive)
 &&    and
 |    or
-\d    A digit: [0-9]
-\D    A non-digit: [^0-9]
-\s    A whitespace character: [ \t\n\0B\f\r]
-\S    A non-whitespace character: [^\s]
-\w    A word character: [a-zA-Z_0-9]
-\W    A non-word character: [^\w]
-\t    The tab character ('\u0009')
-\n    The newline (line feed) character ('\u000A')
-\r    The carriage-return character ('\u000D')
-\f    The form-feed character ('\u000C')
-\a    The alert (bell) character ('\u0007')
-\e    The escape character ('\u001B')
-\b    A word boundary
-\B    A non-word boundary
-\A    The beginning of the input
-\G    The end of the previous match
-\Z    The end of the input but for the final terminator,if any
-\z    The end of the input
-\    The backslash escape character
+\d    a digit: [0-9]
+\D    a non-digit: [^0-9]
+\s    a whitespace character: [ \t\n\0B\f\r]
+\S    a non-whitespace character: [^\s]
+\w    a word character: [a-zA-Z_0-9]
+\W    a non-word character: [^\w]
+\t    the tab character ('\u0009')
+\n    the newline (line feed) character ('\u000A')
+\r    the carriage-return character ('\u000D')
+\f    the form-feed character ('\u000C')
+\a    the alert (bell) character ('\u0007')
+\e    the escape character ('\u001B')
+\b    a word boundary
+\B    a non-word boundary
+\A    the beginning of the input
+\G    the end of the previous match
+\Z    the end of the input but for the final terminator,if any
+\z    the end of the input
+\    the backslash escape character
 {    opening of interval
 }    closing of interval
 [    opening of a range
@@ -39,38 +39,38 @@ $    The end of a line. Matching for character: $
 )    closing of a group
 ?=    Positive look ahead
 ?!    Negative look ahead
-?<=    Positive look behind
-?<!    Negative look behind
-?>    Atomic group
-?:    Non-capturing group
-\p{Lower}    A lower-case alphabetic character: [a-z]
-\p{Upper}    An upper-case alphabetic character:[A-Z]
-\p{ASCII}    All ASCII:[\x00-\x7F]
-\p{Alpha}    An alphabetic character:[\p{Lower}\p{Upper}]
-\p{Digit}    A decimal digit: [0-9]
-\p{Alnum}    An alphanumeric character:[\p{Alpha}\p{Digit}]
-\p{Punct}    Punctuation: One of !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
-\p{Graph}    A visible character: [\p{Alnum}\p{Punct}]
-\p{Print}    A printable character: [\p{Graph}\x20]
-\p{Blank}    A space or a tab: [ \t]
-\p{Cntrl}    A control character: [\x00-\x1F\x7F]
-\p{XDigit}    A hexadecimal digit: [0-9a-fA-F]
-\p{Space}    A whitespace character: [ \t\n\x0B\f\r]
-\p{javaLowerCase}    Equivalent to java.lang.Character.isLowerCase()
-\p{javaUpperCase}    Equivalent to java.lang.Character.isUpperCase()
-\p{javaWhitespace}    Equivalent to java.lang.Character.isWhitespace()
-\p{javaMirrored}    Equivalent to java.lang.Character.isMirrored()
-\p{IsLatin}    A Latin script character (script)
-\p{InGreek}    A character in the Greek block (block)
-\p{Lu}    An uppercase letter (category)
-\p{IsAlphabetic}    An alphabetic character (binary property)
-\p{Sc}    A currency symbol
-\P{InGreek}    Any character except one in the Greek block (negation)
-\p{L}     Any letter except an uppercase letter
-\p{N}     Any numeric character
-\p{L}&&[^\p{Lu}]     Any letter except an uppercase letter (subtraction)
-\h    A horizontal whitespace
-\H    A non horizontal whitespace
-\v    A vertical whitespace
-\V    A non vertical whitespace
-\R    Any Unicode linebreak sequence \u000D\u000A|[\u000A\u000B\u000C\u000D\u0085\u2028\u2029]
+?<=    positive look behind
+?<!    negative look behind
+?>    atomic group
+?:    non-capturing group
+\p{Lower}    a lower-case alphabetic character: [a-z]
+\p{Upper}    an upper-case alphabetic character:[A-Z]
+\p{ASCII}    all ASCII:[\x00-\x7F]
+\p{Alpha}    an alphabetic character:[\p{Lower}\p{Upper}]
+\p{Digit}    a decimal digit: [0-9]
+\p{Alnum}    an alphanumeric character:[\p{Alpha}\p{Digit}]
+\p{Punct}    punctuation: One of !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
+\p{Graph}    a visible character: [\p{Alnum}\p{Punct}]
+\p{Print}    a printable character: [\p{Graph}\x20]
+\p{Blank}    a space or a tab: [ \t]
+\p{Cntrl}    a control character: [\x00-\x1F\x7F]
+\p{XDigit}    a hexadecimal digit: [0-9a-fA-F]
+\p{Space}    a whitespace character: [ \t\n\x0B\f\r]
+\p{javaLowerCase}    equivalent to java.lang.Character.isLowerCase()
+\p{javaUpperCase}    equivalent to java.lang.Character.isUpperCase()
+\p{javaWhitespace}    equivalent to java.lang.Character.isWhitespace()
+\p{javaMirrored}    equivalent to java.lang.Character.isMirrored()
+\p{IsLatin}    a Latin script character (script)
+\p{InGreek}    a character in the Greek block (block)
+\p{Lu}    an uppercase letter (category)
+\p{IsAlphabetic}    an alphabetic character (binary property)
+\p{Sc}    a currency symbol
+\P{InGreek}    any character except one in the Greek block (negation)
+\p{L}     any letter except an uppercase letter
+\p{N}     any numeric character
+\p{L}&&[^\p{Lu}]     any letter except an uppercase letter (subtraction)
+\h    a horizontal whitespace
+\H    a non horizontal whitespace
+\v    a vertical whitespace
+\V    a non vertical whitespace
+\R    any Unicode linebreak sequence \u000D\u000A|[\u000A\u000B\u000C\u000D\u0085\u2028\u2029]

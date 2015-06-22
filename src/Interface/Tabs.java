@@ -1,5 +1,5 @@
 package Interface;
 
 public enum Tabs {
-    MATCH,SPLIT,DESCRIBE
+    MATCH,SPLIT,DESCRIBE,GROUPS
 }

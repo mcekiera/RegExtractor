@@ -3,12 +3,12 @@ package Model;
 import Control.IO;
 
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.TreeMap;
 
 public class Explanator{
     private final String[] special = {"\\","p", ")","(","[","]","{","}","^","$","?","&","+","*"};
     private final String[] metaInCharClass = {"\\","^","]","["};
-    private final HashMap<String, String> description;
+    private final TreeMap<String, String> description;
     private static String indent;
     private String expression;
     private int isInsideClass;

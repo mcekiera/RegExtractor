@@ -67,7 +67,7 @@ public class Grouper {
             Pattern pattern = Pattern.compile(regex);
             Matcher matcher = pattern.matcher(example);
             matcher.find();
-            groups.put(0,regex);
+            groups.put(0,example);
             for(int i = 1; i <= matcher.groupCount(); i++){
                 groups.put(i,matcher.group(i));
                 System.out.println(i + "   " + groups.get(i));

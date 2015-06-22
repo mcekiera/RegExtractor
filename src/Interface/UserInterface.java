@@ -1,19 +1,22 @@
 package Interface;
 
+import Control.IO;
 import Control.Main;
 import Model.Analyzer;
+import Model.Grouper;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.border.LineBorder;
+import javax.swing.event.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.TreeMap;
@@ -35,9 +38,12 @@ public class UserInterface {
     private JTextArea splittedText;
     private JTabbedPane tab;
     private JTextArea explain;
+    private JTextArea descriptionArea;
+    private JList builder;
+    private JTextArea groupsArea;
+    private JList<String> groupList;
 
     public UserInterface(Main main){
-
         frame = new JFrame();
         this.main = main;
         font = new Font("Arial",Font.BOLD,16);
@@ -46,13 +52,30 @@ public class UserInterface {
         inputRegex.setFont(font);
         inputRegex.setText("");
         inputRegex.getDocument().addDocumentListener(new TextListener());
+        JButton reset = new JButton("RESET");
+        reset.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                resetView();
+                inputRegex.setText("");
+                explain.setText("");
+                regexView.setText("");
+                exampleView.setText("");
+                matcherView.setText("");
+            }
+        });
+        reset.setBorder(new LineBorder(Color.BLACK));
+        JPanel north = new JPanel();
+        north.setLayout(new BoxLayout(north,BoxLayout.LINE_AXIS));
+        north.add(inputRegex);
+        north.add(reset);
 
-        frame.add(inputRegex, BorderLayout.NORTH);
+        frame.add(north, BorderLayout.NORTH);
 
 
         frame.add(buildStatusBar(),BorderLayout.PAGE_END);
         frame.add(buildMatcherDisplay(),BorderLayout.CENTER);
-        //frame.add(buildSidePanel(),BorderLayout.EAST);
+        frame.add(buildSidePanel(),BorderLayout.EAST);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setSize(900,500);
         frame.setTitle("Basic Java Regular Expression Visualizer");
@@ -66,15 +89,18 @@ public class UserInterface {
         tab.addTab("Analyze", buildAnalyzerDisplay());
         tab.addTab("Split", buildSplitPanel());
         tab.addTab("Explain", buildExplainPanel());
+        tab.addTab("Groups", buildGroupPanel());
         tab.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                if(tab.getSelectedIndex()==0){
+                if (tab.getSelectedIndex() == 0) {
                     main.setTabs(Tabs.MATCH);
-                }else if(tab.getSelectedIndex()==1){
+                } else if (tab.getSelectedIndex() == 1) {
                     main.setTabs(Tabs.SPLIT);
-                }else if(tab.getSelectedIndex()==2){
+                } else if (tab.getSelectedIndex() == 2) {
                     main.setTabs(Tabs.DESCRIBE);
+                } else if (tab.getSelectedIndex() == 3) {
+                    main.setTabs(Tabs.GROUPS);
                 }
                 main.updateMatchView();
             }
@@ -94,7 +120,7 @@ public class UserInterface {
 
     public JScrollPane buildExplainPanel(){
         explain = new JTextArea();
-        explain.setFont(new Font("Arial",Font.BOLD,16));
+        explain.setFont(new Font("Arial", Font.BOLD, 16));
         return new JScrollPane(explain);
     }
 
@@ -168,21 +194,42 @@ public class UserInterface {
         statusBar.setEditable(false);
         return statusBar;
     }
-    /*
+
     public JPanel buildSidePanel(){
         JPanel panel = new JPanel();
+        ArrayList<String> elements = new ArrayList<String>(IO.load().keySet());
+        builder = new JList<Object>(elements.toArray());
+        builder.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);    //To change body of overridden methods use File | Settings | File Templates.
+                if(e.getClickCount()==2){
+                    int caret = inputRegex.getCaretPosition();
+                    String content = inputRegex.getText();
+                    inputRegex.setText(content.substring(0,caret) + builder.getSelectedValue() + content.substring(caret));
+                }
+            }
+        });
+        builder.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                descriptionArea.setText(IO.load().get(builder.getSelectedValue().toString()));
+            }
+        });
+        JScrollPane pane = new JScrollPane(builder);
 
-        JComboBox<Options> combo = new JComboBox<Options>(Options.values());
+        descriptionArea = new JTextArea(1,1);
+        descriptionArea.setWrapStyleWord(true);
+        descriptionArea.setLineWrap(true);
+        JScrollPane scrollPane = new JScrollPane(descriptionArea);
 
-        //JRadioButton caseSensitive = new JRadioButton(Options.CASE_INSENSITIVE.name());
-        //panel.add(caseSensitive);
-        //JRadioButton multiline = new JRadioButton(Options.MULTILINE.name());
-        //panel.add(multiline);
+        panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
+        panel.add(pane);
+        panel.add(scrollPane);
 
-        panel.add(combo);
         return panel;
     }
-    */
+
 
     public void updateStatus(String message){
         statusBar.setText(message);
@@ -213,9 +260,6 @@ public class UserInterface {
 
     public void updateSplitTab(String[] parts){
         splittedText.setText(Arrays.toString(parts));
-        //for(String part : parts){
-        //    splittedText.append(part + "\n");
-        //}
     }
 
     public void highlightAnalyzedElements(TreeMap<Integer, Integer> elements){
@@ -301,6 +345,45 @@ public class UserInterface {
         if(warning.length()>0){
         updateStatus("Analyzer does not support: " + warning + " Visualization could show wrong results!");
         }
+    }
+
+    public JPanel buildGroupPanel(){
+        JPanel all = new JPanel(new GridLayout(2,1));
+        groupsArea = new JTextArea();
+        groupList = new JList<String>(examples);
+
+        groupList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        groupList.setLayoutOrientation(JList.VERTICAL);
+        groupList.setVisibleRowCount(-1);
+        groupList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                updateGroups();
+            }
+        });
+        JScrollPane scrollPane = new JScrollPane(groupsArea);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        JScrollPane listPane = new JScrollPane(groupList);
+        listPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        listPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        all.add(listPane);
+        all.add(scrollPane);
+
+
+        return all;
+    }
+
+    public void updateGroups(){
+        Grouper grouper = new Grouper();
+        ArrayList<String> patternGroups = new ArrayList<String>(grouper.getPatternsGroups(inputRegex.getText()).values());
+        ArrayList<String> exampleGroups = new ArrayList<String>(grouper.getExampleGroups(inputRegex.getText(),groupList.getSelectedValue()).values());
+        String result = "";
+        for(int i = 0; i < patternGroups.size(); i++){
+            result += "  "+ i + ":     " + patternGroups.get(i) + "   -   " + exampleGroups.get(i) + "\n";
+        }
+        groupsArea.setText(result);
     }
 
 }
