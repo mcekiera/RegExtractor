@@ -24,7 +24,7 @@ public class Grouper {
         TreeMap<Integer,StringBuilder> temp = new TreeMap<Integer,StringBuilder>();
         int level = 0;              // to determine level of nested parenthesis, and which strings update
         int place = 1;              // to determine 'key' for group, group 0 is always whole regular expression
-        escape = 0;             // to count backslash occurrence, to determine if it is escape for parenthesis or for
+        escape = 0;                 // to count backslash occurrence, to determine if it is escape for parenthesis or for
                                     // other backslash
 
         ArrayList<StringBuilder> builders = new ArrayList<StringBuilder>();
