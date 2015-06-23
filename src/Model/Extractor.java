@@ -22,7 +22,7 @@ public class Extractor{
             Matcher matcher = pattern.matcher(input);
 
             while(matcher.find()){
-                    indices.put(matcher.start(), matcher.end());       // todo map is used, so it not allow empty spaces!!
+                    indices.put(matcher.start(), matcher.end());
             }
 
         }catch (PatternSyntaxException ex){

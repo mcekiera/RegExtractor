@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  * Operates on regular expression and an example text to provide regex fragments responsible for capturing groups
@@ -75,10 +74,8 @@ public class Grouper {
             for(int i = 0; i <= matcher.groupCount(); i++){
                 groups.put(i,matcher.group(i));
             }
-        }catch (PatternSyntaxException ex){       //try-catch block is kept inside of method, to ensure
-            //ex.printStackTrace();               //that it will continue to work even if exception is thrown
-        }catch (IllegalStateException ex){
-            //ex.printStackTrace();
+        }catch (Exception ex){       //try-catch block is kept inside of method, to ensure
+            System.out.println(ex.getClass());
         }
         return groups;
     }

@@ -8,6 +8,7 @@ import Model.Grouper;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.event.*;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
@@ -42,6 +43,8 @@ public class UserInterface {
     private JList builder;
     private JTextArea groupsArea;
     private JList<String> groupList;
+    DefaultTableModel model;
+    JTable grouping;
 
     public UserInterface(Main main){
         frame = new JFrame();
@@ -334,12 +337,15 @@ public class UserInterface {
                 || regex.contains("*+") || regex.contains("++") || regex.contains("}+") || regex.contains("?+")){
             warning += "Reluctant and possessive quantifiers. ";
         }
-        if(regex.contains("(?<")){
 
+        if(regex.contains("(?=") || regex.contains("(?!") || regex.contains("(?<=") || regex.contains("(?<!")){
+            warning += "Look ahead and look behind matches.";
+        }else if(regex.contains("(?<")){
             warning += "Named groups.";
         }
-        if(regex.contains("(?=") || regex.contains("(?!") || regex.contains("(?<=") || regex.contains("(?<!")){
-           warning += "Look ahead and look behind matches.";
+
+        if(regex.contains("?>")){
+            warning += "Atomic grouping";
         }
 
         if(warning.length()>0){
@@ -347,8 +353,12 @@ public class UserInterface {
         }
     }
 
-    public JPanel buildGroupPanel(){
+    public JPanel buildGroupPanel(){                //TODO change to JTable
         JPanel all = new JPanel(new GridLayout(2,1));
+        String[] columnNames = {"No","Pattern part","Example part"};
+        String[][] data = new String[0][];
+        model = new DefaultTableModel(data,columnNames);
+        grouping = new JTable(model);
         groupsArea = new JTextArea();
         groupsArea.setEditable(false);
         groupList = new JList<String>(examples);
@@ -363,7 +373,7 @@ public class UserInterface {
                 updateGroups();
             }
         });
-        JScrollPane scrollPane = new JScrollPane(groupsArea);
+        JScrollPane scrollPane = new JScrollPane(grouping);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         JScrollPane listPane = new JScrollPane(groupList);
@@ -380,11 +390,19 @@ public class UserInterface {
         Grouper grouper = new Grouper();
         ArrayList<String> patternGroups = new ArrayList<String>(grouper.getPatternsGroups(Analyzer.trimLookaround(inputRegex.getText())).values());
         ArrayList<String> exampleGroups = new ArrayList<String>(grouper.getExampleGroups(Analyzer.trimLookaround(inputRegex.getText()),groupList.getSelectedValue()).values());
-        String result = "";
-        for(int i = 0; i < exampleGroups.size(); i++){
-            result += "  "+ i + ":     " + patternGroups.get(i) + "   -   " + exampleGroups.get(i) + "\n";
+        String[] row = new String[3];
+        for (int i = model.getRowCount(); i > 0; i--) {
+            model.removeRow(0);
         }
-        groupsArea.setText(result);
+        for(int i = 0; i < exampleGroups.size(); i++){
+
+            row[0] = String.valueOf(i);
+            row[1] = patternGroups.get(i);
+            row[2] = exampleGroups.get(i);
+            model.insertRow(i,row);
+        }
+        frame.revalidate();
+
     }
 
 }
