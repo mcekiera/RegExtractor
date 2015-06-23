@@ -6,10 +6,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+/**
+ * Operates on regular expression and an example text to provide regex fragments responsible for capturing groups
+ * and example fragments match by particular regex fragments.
+ */
 public class Grouper {
     int escape;
     String regex;
 
+    /**
+     * Provide a set of regex fragments, which are responsible for capturing groups.
+     * @param pattern matching pattern.
+     * @return TreeMap with capturing fragments of regular expression.
+     */
     public TreeMap<Integer,String> getPatternsGroups(String pattern){
         this.regex = pattern;
         TreeMap<Integer,StringBuilder> temp = new TreeMap<Integer,StringBuilder>();
@@ -29,9 +38,7 @@ public class Grouper {
             if(isOpeningParenthesis(index)){
                 StringBuilder builder = new StringBuilder();
                 builders.add(level++, builder);
-                if(isGrouping(index)) {
-                    temp.put(place++, builder);
-                }
+                temp.put(place++, builder);
             }
 
             for(int k = 0; k<=level-1; k++){
@@ -42,25 +49,22 @@ public class Grouper {
                 level --;
             }
         }
-        /*
-        for(StringBuilder srt : builders){
-            System.out.println(srt.toString() +"   "+ srt.indexOf(srt.toString()));
-        }
-        System.out.println();
-        for(int key : temp.keySet()){
-            System.out.println(key + "     "  + temp.get(key).toString());
-        }
-        */
 
         TreeMap<Integer,String> groups = new TreeMap<Integer, String>();
         groups.put(0, regex);
         for(int key : temp.keySet()){
             groups.put(key, temp.get(key).toString());
         }
-
+        groups = validateGroups(groups);
         return groups;
     }
 
+    /**
+     * Provide a set of captured regex groups from given pattern and String example pair.
+     * @param regex pattern to match.
+     * @param example String to match by pattern.
+     * @return TreeMap with captured Strings.
+     */
     public TreeMap<Integer,String> getExampleGroups(String regex,String example){
         TreeMap<Integer,String> groups = new TreeMap<Integer, String>();
         try{
@@ -80,19 +84,49 @@ public class Grouper {
         return groups;
     }
 
-    public boolean isMetacharacter(int i){
-        return (i>0 && (!regex.substring(i-1,i).equals("\\")));// && (escape%2==0));
+    /**
+     * Determine if character on given position is a metacharacter in regex.
+     * @param i position of character in String,
+     * @return true if character is metacharacter.
+     */
+    private boolean isMetacharacter(int i){
+        return (i>0 && (!regex.substring(i-1,i).equals("\\")));
     }
 
-    public boolean isOpeningParenthesis(int i){
+    /**
+     * Determine if a character on a given index position in String i a simple opening parenthesis character.
+     * @param i position of character in String,
+     * @return true i character is opening parenthesis.
+     */
+    private boolean isOpeningParenthesis(int i){
         return regex.substring(i,i+1).equals("(") && (i==0 || (i>0 && isMetacharacter(i)));
     }
 
-    public boolean isClosingParenthesis(int i){
+    /**
+     * Determine if a character on a given index position in String i a simple closing parenthesis character.
+     * @param i position of character in String,
+     * @return true i character is closing parenthesis.
+     */
+    private boolean isClosingParenthesis(int i){
         return regex.substring(i,i+1).equals(")")&& (!regex.substring(i-1,i).equals("\\"));
     }
 
-    public boolean isGrouping(int i){
-        return !regex.substring(i,i+3).equals("(?:");
+    /**
+     * It removes from the given TreeMap a Strings objects, that are matched by non-capturing regex elements, like
+     * look behind, look ahead or non-capturing group.
+     * @param groups is a TreeMap to validate,
+     * @return validated TreeMap.
+     */
+    private TreeMap<Integer,String> validateGroups(TreeMap<Integer,String> groups){
+        ArrayList<Integer> toRemove = new ArrayList<Integer>();
+        for(int key : groups.keySet()){
+            if(groups.get(key).matches("(\\(\\?([=:]|[=!<][=!])[^\\)]+\\))")){
+                toRemove.add(key);
+            }
+        }
+        for(int key : toRemove){
+            if(key!=0) groups.remove(key);
+        }
+        return groups;
     }
 }

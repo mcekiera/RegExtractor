@@ -195,13 +195,6 @@ public class Analyzer{
         System.out.println(ex.getClass());
     }
 
-
-    /**
-     * chyba wypadało by przenieś tę metodę do groupera, ewentualnie przerobić go na static
-     * @return  a
-     */
-
-    //TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!1
     public static String trimLookaround(String regex){
         Grouper grouper = new Grouper();
         TreeMap<Integer,String> groups = grouper.getPatternsGroups(regex);

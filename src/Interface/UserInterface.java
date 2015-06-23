@@ -350,6 +350,7 @@ public class UserInterface {
     public JPanel buildGroupPanel(){
         JPanel all = new JPanel(new GridLayout(2,1));
         groupsArea = new JTextArea();
+        groupsArea.setEditable(false);
         groupList = new JList<String>(examples);
 
         groupList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -380,8 +381,10 @@ public class UserInterface {
         ArrayList<String> patternGroups = new ArrayList<String>(grouper.getPatternsGroups(inputRegex.getText()).values());
         ArrayList<String> exampleGroups = new ArrayList<String>(grouper.getExampleGroups(inputRegex.getText(),groupList.getSelectedValue()).values());
         String result = "";
-        for(int i = 0; i < patternGroups.size(); i++){
-            result += "  "+ i + ":     " + patternGroups.get(i) + "   -   " + exampleGroups.get(i) + "\n";
+        for(int i = 0; i <= patternGroups.size()-1; i++){
+            result += "  "+ i + ":     " + patternGroups.get(i) + "   -   " + patternGroups.get(i) + "\n";
+            System.out.println(patternGroups.size());
+            System.out.println(patternGroups.get(i));
         }
         groupsArea.setText(result);
     }

@@ -5,6 +5,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+/**
+ *
+ */
 public class Extractor{
     private Pattern pattern;
     private static Options options = Options.NULL;

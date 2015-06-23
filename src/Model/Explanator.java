@@ -5,6 +5,7 @@ import Control.IO;
 import java.util.Arrays;
 import java.util.TreeMap;
 
+
 public class Explanator{
     private final String[] special = {"\\","p", ")","(","[","]","{","}","^","$","?","&","+","*"};
     private final String[] metaInCharClass = {"\\","^","]","["};
