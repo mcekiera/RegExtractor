@@ -378,13 +378,11 @@ public class UserInterface {
 
     public void updateGroups(){
         Grouper grouper = new Grouper();
-        ArrayList<String> patternGroups = new ArrayList<String>(grouper.getPatternsGroups(inputRegex.getText()).values());
-        ArrayList<String> exampleGroups = new ArrayList<String>(grouper.getExampleGroups(inputRegex.getText(),groupList.getSelectedValue()).values());
+        ArrayList<String> patternGroups = new ArrayList<String>(grouper.getPatternsGroups(Analyzer.trimLookaround(inputRegex.getText())).values());
+        ArrayList<String> exampleGroups = new ArrayList<String>(grouper.getExampleGroups(Analyzer.trimLookaround(inputRegex.getText()),groupList.getSelectedValue()).values());
         String result = "";
-        for(int i = 0; i <= patternGroups.size()-1; i++){
-            result += "  "+ i + ":     " + patternGroups.get(i) + "   -   " + patternGroups.get(i) + "\n";
-            System.out.println(patternGroups.size());
-            System.out.println(patternGroups.get(i));
+        for(int i = 0; i < exampleGroups.size(); i++){
+            result += "  "+ i + ":     " + patternGroups.get(i) + "   -   " + exampleGroups.get(i) + "\n";
         }
         groupsArea.setText(result);
     }

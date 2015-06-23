@@ -38,7 +38,9 @@ public class Grouper {
             if(isOpeningParenthesis(index)){
                 StringBuilder builder = new StringBuilder();
                 builders.add(level++, builder);
-                temp.put(place++, builder);
+                if(isGrouping(index)) {
+                    temp.put(place++, builder);
+                }
             }
 
             for(int k = 0; k<=level-1; k++){
@@ -55,7 +57,6 @@ public class Grouper {
         for(int key : temp.keySet()){
             groups.put(key, temp.get(key).toString());
         }
-        groups = validateGroups(groups);
         return groups;
     }
 
@@ -71,10 +72,8 @@ public class Grouper {
             Pattern pattern = Pattern.compile(regex);
             Matcher matcher = pattern.matcher(example);
             matcher.find();
-            groups.put(0,example);
-            for(int i = 1; i <= matcher.groupCount(); i++){
+            for(int i = 0; i <= matcher.groupCount(); i++){
                 groups.put(i,matcher.group(i));
-                System.out.println(i + "   " + groups.get(i));
             }
         }catch (PatternSyntaxException ex){       //try-catch block is kept inside of method, to ensure
             //ex.printStackTrace();               //that it will continue to work even if exception is thrown
@@ -111,13 +110,17 @@ public class Grouper {
         return regex.substring(i,i+1).equals(")")&& (!regex.substring(i-1,i).equals("\\"));
     }
 
+    public boolean isGrouping(int i){
+        return !regex.substring(i,i+3).equals("(?:");
+    }
+
     /**
      * It removes from the given TreeMap a Strings objects, that are matched by non-capturing regex elements, like
      * look behind, look ahead or non-capturing group.
      * @param groups is a TreeMap to validate,
      * @return validated TreeMap.
      */
-    private TreeMap<Integer,String> validateGroups(TreeMap<Integer,String> groups){
+    public TreeMap<Integer,String> validateGroups(TreeMap<Integer,String> groups){
         ArrayList<Integer> toRemove = new ArrayList<Integer>();
         for(int key : groups.keySet()){
             if(groups.get(key).matches("(\\(\\?([=:]|[=!<][=!])[^\\)]+\\))")){
