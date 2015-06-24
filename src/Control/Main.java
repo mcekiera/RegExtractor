@@ -74,4 +74,9 @@ public class Main {
         tabs = tab;
     }
 
+    public static void exceptionMessage(Exception ex){
+        System.out.println(ex.getClass());
+        //ex.printStackTrace();
+    }
+
 }

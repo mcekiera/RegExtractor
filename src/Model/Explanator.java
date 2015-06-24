@@ -14,10 +14,12 @@ public class Explanator{
     private String expression;
     private int isInsideClass;
     private int skipIndices;
+    private String hyphen;
 
     public Explanator(){
         description = IO.load();
         indent = "  ";
+        hyphen = "  -  ";
     }
 
     public String explain(String regex){
@@ -63,7 +65,7 @@ public class Explanator{
             return explainSpecialCase(i);
         }else if(isRange(i)){
             skipIndices = 2;
-            return expression.substring(i,i+3) + "  -  " + "range from \"" + expression.substring(i,i+1) + "\" to \""
+            return expression.substring(i,i+3) + hyphen + "range from \"" + expression.substring(i,i+1) + "\" to \""
                     + expression.substring(i+2,i+3) + "\"";
         }else{
             return matchCharacter(expression.substring(i,i+1));
@@ -73,7 +75,7 @@ public class Explanator{
     private String explainSimpleCase(int i){
         String character = expression.substring(i,i+1);
         if(isSimpleMetacharacter(character) && !(isInsideCharClass())){
-            return character + "  -  " + description.get(character);
+            return character + hyphen + description.get(character);
         }else{
             return matchCharacter(character);
         }
@@ -120,18 +122,18 @@ public class Explanator{
     private String matchPlus(int i){
         if(isInBounds(i,2) && expression.substring(i,i+2).matches("\\+[?+]")){
             skipIndices++;
-            return  expression.substring(i,i+2) + "  -  " + description.get(expression.substring(i,i+2));
+            return  expression.substring(i,i+2) + hyphen + description.get(expression.substring(i,i+2));
         }else{
-            return expression.substring(i,i+1) + "  -  " + description.get(expression.substring(i,i+1));
+            return expression.substring(i,i+1) + hyphen + description.get(expression.substring(i,i+1));
         }
     }
 
     private String matchStar(int i){
         if(isInBounds(i,2) && expression.substring(i,i+2).matches("\\*[?+]")){
             skipIndices++;
-            return  expression.substring(i,i+2) + "  -  " + description.get(expression.substring(i,i+2));
+            return  expression.substring(i,i+2) + hyphen + description.get(expression.substring(i,i+2));
         }else{
-            return expression.substring(i,i+1) + "  -  " + description.get(expression.substring(i,i+1));
+            return expression.substring(i,i+1) + hyphen + description.get(expression.substring(i,i+1));
         }
     }
 
@@ -139,18 +141,24 @@ public class Explanator{
         String escapeSequence = expression.substring(i,i+2);
         if(description.containsKey(escapeSequence)){           // is declared meta-sequence
             skipIndices = 1;
-            return expression.substring(i,i+2) + "  -  " + description.get(escapeSequence);
+            return expression.substring(i,i+2) + hyphen + description.get(escapeSequence);
         }else if(isPOSIX(expression.charAt(i+1))){
             skipIndices = expression.substring(i,expression.indexOf("}",i)+1).length();
-            return expression.substring(i,expression.indexOf("}",i)+1) + "  -  "
+            return expression.substring(i,expression.indexOf("}",i)+1) + hyphen
                     + description.get(expression.substring(i,expression.indexOf("}",i)+1));
         }else if(Character.isDigit(expression.charAt(i + 1))){
             skipIndices++;
-            return expression.substring(i,i+2) + "  -  " + "backreference to captured group: " +
+            return expression.substring(i,i+2) + hyphen + "backreference to captured group: " +
                     new Grouper().getPatternsGroups(expression).get(Integer.parseInt(expression.substring(i+1,i+2)));
+        }else if(isNamedGroup(escapeSequence)){
+            int open = expression.indexOf("<",i);
+            int close = expression.indexOf(">",i);
+            skipIndices += close - i;
+            return expression.substring(i,close+1) + hyphen + "call to named capturing group: " + expression.substring(open,close+1);
+
         }else{                                                // is a escape sequence
             skipIndices = 1;
-            return escapeSequence + "  -  " + description.get("\\") + " for: " + expression.substring(i+1,i+2)
+            return escapeSequence + hyphen + description.get("\\") + " for: " + expression.substring(i+1,i+2)
                     + " (" + description.get(expression.substring(i+1,i+2))+")";
         }
     }
@@ -160,50 +168,49 @@ public class Explanator{
         if(!range.contains(",")){
             skipIndices = range.length();
             return matchSimpleMetacharacter(i) + "\n" + indent+"        " + range
-                    + "  -  " + "exactly " + range + " times";
+                    + hyphen + "exactly " + range + " times";
         }else{
             String[] temp = range.split(",");
             if(temp.length == 1){
                 skipIndices = range.length();
                 return matchSimpleMetacharacter(i) + "\n"+  indent+"        " + range
-                        + "  -  " + "at least " + temp[0] + " times";
+                        + hyphen + "at least " + temp[0] + " times";
             }else{
                 skipIndices = range.length();
                 return matchSimpleMetacharacter(i) + "\n"+  indent+"        " + range
-                        + "  -  " + "at least " + temp[0] + " but no more than " + temp[1] + " times";
+                        + hyphen + "at least " + temp[0] + " but no more than " + temp[1] + " times";
             }
         }
     }
     private String matchBeginningOrEnd(int i){
         String character = expression.substring(i,i+1);
-
         if(i== 0 || i == 1 || i == expression.length()-2 || i == expression.length()-1){
-            return character + "  -  " + description.get(character).split("\\.")[0];
+            return character + hyphen + description.get(character).split("\\.")[0];
         }else{
-            return character + "  -  " + description.get(character).split("\\.")[1];
+            return character + hyphen + description.get(character).split("\\.")[1];
         }
     }
 
     private String matchCharacter(String character){
-        return character + "  -  " + "matching for character: "+ character;
+        return character + hyphen + "matching for character: "+ character;
     }
 
     private String matchSimpleMetacharacter(int i){
         String character = expression.substring(i,i+1);
-        return character + "  -  " + description.get(character);
+        return character + hyphen + description.get(character);
     }
 
     private String matchAnd(int index){
         if(isInBounds(index,2) && expression.charAt(index+1)=='&'){
             skipIndices = 1;
-            return  "&&" + "  -  " + description.get("&&");
+            return  "&&" + hyphen + description.get("&&");
         }else{
             return matchCharacter("&");
         }
     }
 
     private String closingBracket(String character){
-        return character + "  -  " + description.get(character);
+        return character + hyphen + description.get(character);
     }
 
     private String matchQuestionMark(int i){
@@ -211,13 +218,18 @@ public class Explanator{
         if(isInBounds(i,3) && expression.substring(i,i+3).matches("\\?[=!<>][=!]")){
             System.out.println(expression.substring(i,i+3));
             skipIndices +=2;
-            return expression.substring(i,i+3) + "  -  " + description.get(expression.substring(i,i+3));
-        }else if(isInBounds(i,2) && expression.substring(i,i+2).matches("\\?[=!<>:\\+\\?]")){
+            return expression.substring(i,i+3) + hyphen + description.get(expression.substring(i,i+3));
+        }else if(isInBounds(i,2) && expression.substring(i,i+2).matches("\\?[=!>:\\+\\?]")){
             System.out.println(expression.substring(i,i+2));
             skipIndices +=1;
-            return expression.substring(i,i+2) + "  -  " + description.get(expression.substring(i,i+2));
+            return expression.substring(i,i+2) + hyphen + description.get(expression.substring(i,i+2));
+        }else if(expression.substring(i,i+2).equals("?<")){
+            int open = expression.indexOf("<",i);
+            int close = expression.indexOf(">",i);
+            skipIndices += close - i;
+            return expression.substring(i,close+1) + hyphen + "named capturing group: " + expression.substring(open,close+1);
         }
-        return character + "  -  " + description.get(character);
+        return character + hyphen + description.get(character);
     }
 
     public void resetIndentation(){
@@ -262,6 +274,10 @@ public class Explanator{
 
     public boolean isClosing(String substring){
         return substring.contains("closing");
+    }
+
+    public boolean isNamedGroup(String substring){
+        return substring.equals("\\k");
     }
 
 }

@@ -1,5 +1,7 @@
 package Model;
 
+import Control.Main;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.TreeMap;
@@ -50,19 +52,9 @@ public class Analyzer{
                 merged.put(key,backward.get(key));
             }
         }
-        System.out.println("forward " + forward.keySet().toString());
-        System.out.println("forward " + forward.values().toString());
-        System.out.println("backward " + backward.keySet().toString());
-        System.out.println("backward " + backward.values().toString());
-        System.out.println("merged " + merged.keySet().toString());
-        System.out.println("merged " + merged.values().toString());
-
         merged = validate(merged);
         merged = checkForEndOfALina(merged);
         merged = checkForBeginningOfALina(merged);
-
-        System.out.println("validated " + merged.keySet().toString());
-        System.out.println("validated " + merged.values().toString());
 
         return merged;
     }
@@ -76,10 +68,8 @@ public class Analyzer{
                 matcher = pattern.matcher(example);
                 matcher.find();
                 divided.put(i, matcher.end());
-            }catch (PatternSyntaxException ex){       //try-catch block is kept inside of method, to ensure
-                //ex.printStackTrace();               //that it will continue to work even if exception is thrown
-            }catch (IllegalStateException ex){
-                //ex.printStackTrace();
+            }catch (PatternSyntaxException ex){
+                Main.exceptionMessage(ex);
             }
         }
 
@@ -102,10 +92,8 @@ public class Analyzer{
                     continue;
                 }
                 divided.put(i, matcher.start());
-            }catch (PatternSyntaxException ex){       //try-catch block is kept inside of method, to ensure
-                //ex.printStackTrace();               //that it will continue to work even if exception is thrown
-            }catch (IllegalStateException ex){
-                //ex.printStackTrace();
+            }catch (PatternSyntaxException ex){
+                Main.exceptionMessage(ex);
             }
         }
         divided = checkForEndOfALina(divided);
@@ -130,7 +118,6 @@ public class Analyzer{
                 }
             }
         }
-        //TODO: named patternsGroups
         return sample;
     }
 
@@ -172,7 +159,7 @@ public class Analyzer{
                 }
 
             }catch (Exception ex){
-                exceptionMessage(ex);
+                Main.exceptionMessage(ex);
             }
         }
         return example.length();
@@ -189,10 +176,6 @@ public class Analyzer{
             toCheck.remove(1,0);
         }
         return toCheck;
-    }
-
-    public static void exceptionMessage(Exception ex){
-        System.out.println(ex.getClass());
     }
 
     public static String trimLookaround(String regex){

@@ -1,5 +1,7 @@
 package Model;
 
+import Control.Main;
+
 import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
@@ -75,7 +77,7 @@ public class Grouper {
                 groups.put(i,matcher.group(i));
             }
         }catch (Exception ex){       //try-catch block is kept inside of method, to ensure
-            System.out.println(ex.getClass());
+            Main.exceptionMessage(ex);
         }
         return groups;
     }

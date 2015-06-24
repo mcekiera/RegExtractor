@@ -3,7 +3,9 @@ package Interface;
 import Control.IO;
 import Control.Main;
 import Model.Analyzer;
+import Model.Extractor;
 import Model.Grouper;
+import Model.Options;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -13,10 +15,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
@@ -41,10 +40,10 @@ public class UserInterface {
     private JTextArea explain;
     private JTextArea descriptionArea;
     private JList builder;
-    private JTextArea groupsArea;
     private JList<String> groupList;
-    DefaultTableModel model;
-    JTable grouping;
+    private DefaultTableModel model;
+    private JCheckBox multiline;
+    private JCheckBox caseSensitive;
 
     public UserInterface(Main main){
         frame = new JFrame();
@@ -74,7 +73,7 @@ public class UserInterface {
         north.add(reset);
 
         frame.add(north, BorderLayout.NORTH);
-
+        frame.setJMenuBar(buildMenu());
 
         frame.add(buildStatusBar(),BorderLayout.PAGE_END);
         frame.add(buildMatcherDisplay(),BorderLayout.CENTER);
@@ -85,6 +84,28 @@ public class UserInterface {
         frame.setVisible(true);
     }
 
+    public JMenuBar buildMenu(){
+        JMenuBar bar = new JMenuBar();
+        JMenu menu = new JMenu("Help");
+        JMenuItem about = new JMenuItem("About");
+        JMenuItem matcher = new JMenuItem("Matching");
+        JMenuItem builder = new JMenuItem("Builder");
+        JMenuItem options = new JMenuItem("Options");
+        JMenuItem analyzer = new JMenuItem("Analyze");
+        JMenuItem split = new JMenuItem("Split");
+        JMenuItem explain = new JMenuItem("Explain");
+        JMenuItem groups = new JMenuItem("Groups");
+        bar.add(menu);
+        menu.add(about);
+        menu.add(matcher);
+        menu.add(builder);
+        menu.add(options);
+        menu.add(analyzer);
+        menu.add(split);
+        menu.add(explain);
+        menu.add(groups);
+        return bar;
+    }
     public JTabbedPane buildTabPanel(){
 
         tab = new JTabbedPane();
@@ -188,7 +209,7 @@ public class UserInterface {
         matchScroll.setPreferredSize(new Dimension(250,150));
 
         JSplitPane pane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,matchScroll,buildTabPanel());
-        pane.setResizeWeight(1);
+        pane.setResizeWeight(0.5);
         return pane;
     }
 
@@ -224,15 +245,28 @@ public class UserInterface {
         descriptionArea = new JTextArea(1,1);
         descriptionArea.setWrapStyleWord(true);
         descriptionArea.setLineWrap(true);
+        descriptionArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(descriptionArea);
 
         panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
+        panel.add(buildOptions());
         panel.add(pane);
         panel.add(scrollPane);
 
         return panel;
     }
 
+    public JPanel buildOptions(){
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel,BoxLayout.PAGE_AXIS));
+        multiline = new JCheckBox("Multiline",false);
+        caseSensitive = new JCheckBox("Case sensitive",false);
+        panel.add(multiline);
+        panel.add(caseSensitive);
+        multiline.addItemListener(new OptionsUpdater());
+        caseSensitive.addItemListener(new OptionsUpdater());
+        return panel;
+    }
 
     public void updateStatus(String message){
         statusBar.setText(message);
@@ -252,7 +286,7 @@ public class UserInterface {
             try {
                 highlighter.addHighlight(index, toHighlight.get(index), getPainter());
             } catch (BadLocationException ex) {
-                ex.printStackTrace();
+                Main.exceptionMessage(ex);;
             }
         }
     }
@@ -274,8 +308,7 @@ public class UserInterface {
                 forExample.addHighlight(elements.get(r),elements.get(i),pointer);
                 forPattern.addHighlight(r,i,pointer);
             }catch (BadLocationException ex){
-                System.out.println(ex.toString() + "BadLocationException is expected");
-                //ex.printStackTrace();
+                Main.exceptionMessage(ex);;
             }
             r = i;
         }
@@ -353,13 +386,14 @@ public class UserInterface {
         }
     }
 
-    public JPanel buildGroupPanel(){                //TODO change to JTable
+    public JPanel buildGroupPanel(){
         JPanel all = new JPanel(new GridLayout(2,1));
         String[] columnNames = {"No","Pattern part","Example part"};
         String[][] data = new String[0][];
         model = new DefaultTableModel(data,columnNames);
-        grouping = new JTable(model);
-        groupsArea = new JTextArea();
+        JTable grouping = new JTable(model);
+        grouping.setEnabled(false);
+        JTextArea groupsArea = new JTextArea();
         groupsArea.setEditable(false);
         groupList = new JList<String>(examples);
 
@@ -381,12 +415,11 @@ public class UserInterface {
         listPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         all.add(listPane);
         all.add(scrollPane);
-
-
         return all;
     }
 
     public void updateGroups(){
+
         Grouper grouper = new Grouper();
 
         ArrayList<String> patternGroups = new ArrayList<String>(grouper.getPatternsGroups(Analyzer.trimLookaround(inputRegex.getText())).values());
@@ -406,4 +439,18 @@ public class UserInterface {
 
     }
 
+    private class OptionsUpdater implements ItemListener {
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            System.out.println("in");
+            if(multiline.isSelected() && caseSensitive.isSelected()){
+                Extractor.setOptions(Options.BOTH);
+            }else if(multiline.isSelected()){
+                Extractor.setOptions(Options.MULTILINE);
+            }else{
+                Extractor.setOptions(Options.NULL);
+            }
+            main.updateMatchView();
+        }
+    }
 }

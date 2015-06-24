@@ -1,5 +1,7 @@
 package Model;
 
+import Control.Main;
+
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,7 +28,7 @@ public class Extractor{
             }
 
         }catch (PatternSyntaxException ex){
-            Analyzer.exceptionMessage(ex);
+            Main.exceptionMessage(ex);
         }
         return indices;
     }
@@ -35,7 +37,7 @@ public class Extractor{
         try{
             pattern = Pattern.compile(regex);
         }catch (PatternSyntaxException ex){
-            Analyzer.exceptionMessage(ex);
+            Main.exceptionMessage(ex);;
         }
         return pattern.split(input);
     }
@@ -46,6 +48,8 @@ public class Extractor{
                 return Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
             case MULTILINE:
                 return Pattern.compile(regex, Pattern.MULTILINE);
+            case BOTH:
+                return Pattern.compile(regex, Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
             default:
                 return Pattern.compile(regex);
         }
@@ -53,6 +57,10 @@ public class Extractor{
 
     public static Options getOption(){
         return options;
+    }
+
+    public static void setOptions(Options op){
+        options = op;
     }
 
 }
