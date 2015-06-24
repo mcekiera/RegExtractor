@@ -109,26 +109,12 @@ public class Grouper {
         return regex.substring(i,i+1).equals(")")&& (!regex.substring(i-1,i).equals("\\"));
     }
 
+    /**
+     * Determine if a String, which starts from given index, is a beginning of a grouping parentheses.
+     * @param i index of character which is currently checking
+     * @return true if group is capturing
+     */
     public boolean isGrouping(int i){
         return !regex.substring(i,i+3).equals("(?:");
-    }
-
-    /**
-     * It removes from the given TreeMap a Strings objects, that are matched by non-capturing regex elements, like
-     * look behind, look ahead or non-capturing group.
-     * @param groups is a TreeMap to validate,
-     * @return validated TreeMap.
-     */
-    public TreeMap<Integer,String> validateGroups(TreeMap<Integer,String> groups){
-        ArrayList<Integer> toRemove = new ArrayList<Integer>();
-        for(int key : groups.keySet()){
-            if(groups.get(key).matches("(\\(\\?([=:]|[=!<][=!])[^\\)]+\\))")){
-                toRemove.add(key);
-            }
-        }
-        for(int key : toRemove){
-            if(key!=0) groups.remove(key);
-        }
-        return groups;
     }
 }

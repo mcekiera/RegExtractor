@@ -73,8 +73,6 @@ public class UserInterface {
         north.add(reset);
 
         frame.add(north, BorderLayout.NORTH);
-        frame.setJMenuBar(buildMenu());
-
         frame.add(buildStatusBar(),BorderLayout.PAGE_END);
         frame.add(buildMatcherDisplay(),BorderLayout.CENTER);
         frame.add(buildSidePanel(),BorderLayout.EAST);
@@ -84,28 +82,6 @@ public class UserInterface {
         frame.setVisible(true);
     }
 
-    public JMenuBar buildMenu(){
-        JMenuBar bar = new JMenuBar();
-        JMenu menu = new JMenu("Help");
-        JMenuItem about = new JMenuItem("About");
-        JMenuItem matcher = new JMenuItem("Matching");
-        JMenuItem builder = new JMenuItem("Builder");
-        JMenuItem options = new JMenuItem("Options");
-        JMenuItem analyzer = new JMenuItem("Analyze");
-        JMenuItem split = new JMenuItem("Split");
-        JMenuItem explain = new JMenuItem("Explain");
-        JMenuItem groups = new JMenuItem("Groups");
-        bar.add(menu);
-        menu.add(about);
-        menu.add(matcher);
-        menu.add(builder);
-        menu.add(options);
-        menu.add(analyzer);
-        menu.add(split);
-        menu.add(explain);
-        menu.add(groups);
-        return bar;
-    }
     public JTabbedPane buildTabPanel(){
 
         tab = new JTabbedPane();
@@ -286,7 +262,7 @@ public class UserInterface {
             try {
                 highlighter.addHighlight(index, toHighlight.get(index), getPainter());
             } catch (BadLocationException ex) {
-                Main.exceptionMessage(ex);;
+                Main.exceptionMessage(ex);
             }
         }
     }
@@ -308,7 +284,7 @@ public class UserInterface {
                 forExample.addHighlight(elements.get(r),elements.get(i),pointer);
                 forPattern.addHighlight(r,i,pointer);
             }catch (BadLocationException ex){
-                Main.exceptionMessage(ex);;
+                Main.exceptionMessage(ex);
             }
             r = i;
         }
