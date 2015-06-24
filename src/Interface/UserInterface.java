@@ -197,8 +197,11 @@ public class UserInterface {
 
     public JPanel buildSidePanel(){
         JPanel panel = new JPanel();
-        ArrayList<String> elements = new ArrayList<String>(IO.load().keySet());
-        builder = new JList<Object>(elements.toArray());
+        DefaultListModel<String> model = new DefaultListModel<String>();
+        builder = new JList<String>(model);
+        for(String key : IO.load().keySet()){
+            model.addElement(key);
+        }
         builder.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -292,9 +295,9 @@ public class UserInterface {
     }
 
     public void updateAnalyzer(String regex,String example){
-        regexView.setText(Analyzer.trimLookaround(regex));
+        regexView.setText(Analyzer.trimLookAround(regex));
         exampleView.setText(example);
-        isNotSupported(regex);
+        ifNotSupported(regex);
     }
 
     public void updateExamples(){
@@ -340,25 +343,23 @@ public class UserInterface {
             main.updateMatchView();
         }
     }
-    public void isNotSupported(String regex){
+    public void ifNotSupported(String regex){
         String warning = "";
         if(regex.contains("??") || regex.contains("*?") || regex.contains("+?") || regex.contains("?+")
                 || regex.contains("*+") || regex.contains("++") || regex.contains("}+") || regex.contains("?+")){
-            warning += "Reluctant and possessive quantifiers. ";
+            warning += "reluctant and possessive quantifiers, ";
         }
 
         if(regex.contains("(?=") || regex.contains("(?!") || regex.contains("(?<=") || regex.contains("(?<!")){
-            warning += "Look ahead and look behind matches.";
-        }else if(regex.contains("(?<")){
-            warning += "Named groups.";
+            warning += "look ahead and look behind matches,";
         }
 
         if(regex.contains("?>")){
-            warning += "Atomic grouping";
+            warning += "atomic grouping";
         }
 
         if(warning.length()>0){
-        updateStatus("Analyzer does not support: " + warning + " Visualization could show wrong results!");
+        updateStatus("Analyzer does not support: " + warning.substring(0,warning.length()-1) + " ...Visualization could show wrong results!");
         }
     }
 
@@ -398,8 +399,8 @@ public class UserInterface {
 
         Grouper grouper = new Grouper();
 
-        ArrayList<String> patternGroups = new ArrayList<String>(grouper.getPatternsGroups(Analyzer.trimLookaround(inputRegex.getText())).values());
-        ArrayList<String> exampleGroups = new ArrayList<String>(grouper.getExampleGroups(Analyzer.trimLookaround(inputRegex.getText()),groupList.getSelectedValue()).values());
+        ArrayList<String> patternGroups = new ArrayList<String>(grouper.getPatternsGroups(Analyzer.trimLookAround(inputRegex.getText())).values());
+        ArrayList<String> exampleGroups = new ArrayList<String>(grouper.getExampleGroups(Analyzer.trimLookAround(inputRegex.getText()),groupList.getSelectedValue()).values());
         String[] row = new String[3];
         for (int i = model.getRowCount(); i > 0; i--) {
             model.removeRow(0);
@@ -418,7 +419,6 @@ public class UserInterface {
     private class OptionsUpdater implements ItemListener {
         @Override
         public void itemStateChanged(ItemEvent e) {
-            System.out.println("in");
             if(multiline.isSelected() && caseSensitive.isSelected()){
                 Extractor.setOptions(Options.BOTH);
             }else if(multiline.isSelected()){

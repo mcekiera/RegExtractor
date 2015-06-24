@@ -1,24 +1,23 @@
 package Control;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.TreeMap;
+import java.util.LinkedHashMap;
 
 /**
  * Lead and provide a date from file with description of regex elements.
  */
 public class IO {
-    static private TreeMap<String,String> description;
+    static private LinkedHashMap<String,String> description;
 
     public IO(){
-        description = new TreeMap<String, String>(loadElements());
+        description = new LinkedHashMap<String, String>(loadElements());
     }
 
     /**
      * Provide only instance of TreeMap containing data.
      * @return TreeMap with data.
      */
-    public static TreeMap<String,String> load(){
+    public static LinkedHashMap<String,String> load(){
         return description;
     }
 
@@ -26,9 +25,8 @@ public class IO {
      * Read data from file.
      * @return HashMap with data from regex.txt file.
      */
-    private HashMap<String, String> loadElements(){
-        System.out.println("loaded!");
-        HashMap<String, String> elements = new HashMap<String,String>();
+    private LinkedHashMap<String, String> loadElements(){
+        LinkedHashMap<String, String> elements = new LinkedHashMap<String,String>();
         File file = new File("src\\Control\\regex.txt");
         try{
             String line;
@@ -43,6 +41,7 @@ public class IO {
         }catch (IOException ex){
             ex.printStackTrace();
         }
+        System.out.println(elements.toString());
         return elements;
     }
 }

@@ -3,13 +3,13 @@ package Model;
 import Control.IO;
 
 import java.util.Arrays;
-import java.util.TreeMap;
+import java.util.LinkedHashMap;
 
 
 public class Explanator{
     private final String[] special = {"\\","p", ")","(","[","]","{","}","^","$","?","&","+","*"};
     private final String[] metaInCharClass = {"\\","^","]","["};
-    private final TreeMap<String, String> description;
+    private final LinkedHashMap<String, String> description;
     private static String indent;
     private String expression;
     private int isInsideClass;
@@ -44,11 +44,11 @@ public class Explanator{
 
             i += skipIndices;                                   // to skip character already described by specialized methods
 
-            if(isClosing(result)) indent = indent.substring(0,indent.length()-8);
-
-            builder.append(indent);
-            builder.append(result);
-            builder.append("\n");
+            if(isClosing(result)) indent = indent.substring(0,indent.length()-8);       // controls indention, with
+                                                                                        // every opening bracket
+            builder.append(indent);                                                     // it moves text to the right,
+            builder.append(result);                                                     // and with every closing
+            builder.append("\n");                                                       // bracket, to the left
 
             if(isOpening(result)) indent += "        ";
         }
@@ -93,6 +93,9 @@ public class Explanator{
             case OPEN_SQUARE_BRACKET:
                 isInsideClass++;
             case OPEN_PARANTHESIS:
+                if(isMode(i)){
+                    return matchModes(i);
+                }
                 return matchSimpleMetacharacter(i);
 
             case OPEN_CURLY_BRACKET:
@@ -216,11 +219,9 @@ public class Explanator{
     private String matchQuestionMark(int i){
         String character = expression.substring(i,i+1);
         if(isInBounds(i,3) && expression.substring(i,i+3).matches("\\?[=!<>][=!]")){
-            System.out.println(expression.substring(i,i+3));
             skipIndices +=2;
             return expression.substring(i,i+3) + hyphen + description.get(expression.substring(i,i+3));
         }else if(isInBounds(i,2) && expression.substring(i,i+2).matches("\\?[=!>:\\+\\?]")){
-            System.out.println(expression.substring(i,i+2));
             skipIndices +=1;
             return expression.substring(i,i+2) + hyphen + description.get(expression.substring(i,i+2));
         }else if(expression.substring(i,i+2).equals("?<")){
@@ -230,6 +231,13 @@ public class Explanator{
             return expression.substring(i,close+1) + hyphen + "named capturing group: " + expression.substring(open,close+1);
         }
         return character + hyphen + description.get(character);
+    }
+
+    public String matchModes(int i){
+        String mode = expression.substring(i,i+4);
+        skipIndices += 3;
+        System.out.println(mode);
+        return mode + hyphen + description.get(mode);
     }
 
     public void resetIndentation(){
@@ -278,6 +286,10 @@ public class Explanator{
 
     public boolean isNamedGroup(String substring){
         return substring.equals("\\k");
+    }
+
+    public boolean isMode(int i){
+        return isInBounds(i,4) && expression.substring(i,i+4).matches("\\(\\?[ixmsud]\\)");
     }
 
 }

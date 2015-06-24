@@ -115,6 +115,6 @@ public class Grouper {
      * @return true if group is capturing
      */
     public boolean isGrouping(int i){
-        return !regex.substring(i,i+3).equals("(?:");
+        return !regex.substring(i,i+3).equals("(?:") && !regex.substring(i,i+4).matches("\\(\\?[ixmsud]\\)");
     }
 }

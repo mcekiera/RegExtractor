@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 public class Analyzer{
     private String regex;
@@ -19,7 +18,7 @@ public class Analyzer{
     public Analyzer(String regex, String analyzed){
         this.regex = regex;
         this.example = analyzed;
-        this.regex = trimLookaround(regex);
+        this.regex = trimLookAround(regex);
         Grouper grouper = new Grouper();
         groups = grouper.getExampleGroups(regex, example);
     }
@@ -68,12 +67,10 @@ public class Analyzer{
                 matcher = pattern.matcher(example);
                 matcher.find();
                 divided.put(i, matcher.end());
-            }catch (PatternSyntaxException ex){
+            }catch (Exception ex){
                 Main.exceptionMessage(ex);
             }
         }
-
-        System.out.println();
 
         return divided;
     }
@@ -84,7 +81,6 @@ public class Analyzer{
             try{
                 String temp = getProperSample(regex.substring(i));
                 pattern = Pattern.compile(temp+"$");
-                System.out.println(temp);
                 matcher = pattern.matcher(example);
                 matcher.find();
                 if(i == regex.length() && matcher.start()==0){      //is it necessary with merge?
@@ -92,7 +88,7 @@ public class Analyzer{
                     continue;
                 }
                 divided.put(i, matcher.start());
-            }catch (PatternSyntaxException ex){
+            }catch (Exception ex){
                 Main.exceptionMessage(ex);
             }
         }
@@ -110,7 +106,6 @@ public class Analyzer{
 
         String sample = str;
         if(str.length()>1 && str.substring(0,2).matches("\\\\\\d")){
-            System.out.println("inside");
             for(int key : groups.keySet()){
                 if(groups.get(key)!=null){
                     String temp = "(" + groups.get(key).replace("\\","\\\\\\\\") + ")";         //this is a crucial part to replece single "\"!!!
@@ -178,7 +173,7 @@ public class Analyzer{
         return toCheck;
     }
 
-    public static String trimLookaround(String regex){
+    public static String trimLookAround(String regex){
         Grouper grouper = new Grouper();
         TreeMap<Integer,String> groups = grouper.getPatternsGroups(regex);
         for(int key : groups.keySet()){
@@ -199,7 +194,6 @@ public class Analyzer{
         for(int key : keys){
             if(sample.get(key) > lastValue){
                 sample.put(key,lastValue);
-                System.out.println(key + "\\" + sample.get(key) + "\\" + lastKey + "\\" + lastValue);
             }
             lastValue = sample.get(key);
             lastKey = key;

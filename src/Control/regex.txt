@@ -73,4 +73,10 @@ $    the end of a line. Matching for character: $
 \H    a non horizontal whitespace
 \v    a vertical whitespace
 \V    a non vertical whitespace
-\R    any Unicode linebreak sequence \u000D\u000A|[\u000A\u000B\u000C\u000D\u0085\u2028\u2029]
+\R    any Unicode line break sequence \u000D\u000A|[\u000A\u000B\u000C\u000D\u0085\u2028\u2029]
+(?i)    case insensitive mode
+(?x)    comments mode, permits whitespace and comments in the pattern
+(?m)    multiline mode
+(?s)    dotall mode, dot matches all characters
+(?u)    Unicode case mode, enables Unicode-aware case folding
+(?d)    UNIX lines mode

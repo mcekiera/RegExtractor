@@ -5,7 +5,6 @@ import Control.Main;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  *
@@ -27,7 +26,7 @@ public class Extractor{
                     indices.put(matcher.start(), matcher.end());
             }
 
-        }catch (PatternSyntaxException ex){
+        }catch (Exception ex){
             Main.exceptionMessage(ex);
         }
         return indices;
@@ -36,8 +35,8 @@ public class Extractor{
     public String[] split(String regex, String input){
         try{
             pattern = Pattern.compile(regex);
-        }catch (PatternSyntaxException ex){
-            Main.exceptionMessage(ex);;
+        }catch (Exception ex){
+            Main.exceptionMessage(ex);
         }
         return pattern.split(input);
     }
