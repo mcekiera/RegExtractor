@@ -388,6 +388,7 @@ public class UserInterface {
 
     public void updateGroups(){
         Grouper grouper = new Grouper();
+
         ArrayList<String> patternGroups = new ArrayList<String>(grouper.getPatternsGroups(Analyzer.trimLookaround(inputRegex.getText())).values());
         ArrayList<String> exampleGroups = new ArrayList<String>(grouper.getExampleGroups(Analyzer.trimLookaround(inputRegex.getText()),groupList.getSelectedValue()).values());
         String[] row = new String[3];

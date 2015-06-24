@@ -176,8 +176,8 @@ public class Explanator{
     }
     private String matchBeginningOrEnd(int i){
         String character = expression.substring(i,i+1);
-        int beginningOrEnd = (character.equals("^")) ? 0 : expression.length()-1;  // match for beginning or end of regex
-        if(i==beginningOrEnd){
+
+        if(i== 0 || i == 1 || i == expression.length()-2 || i == expression.length()-1){
             return character + "  -  " + description.get(character).split("\\.")[0];
         }else{
             return character + "  -  " + description.get(character).split("\\.")[1];
