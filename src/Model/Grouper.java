@@ -41,6 +41,7 @@ public class Grouper {
                 builders.add(level++, builder);
                 if(isGrouping(i)) {
                     temp.put(place++, builder);
+                    System.out.println(builder.toString());
                 }
             }
 
@@ -53,10 +54,19 @@ public class Grouper {
             }
         }
 
+        return toProperFormat(temp);
+    }
+
+    /**
+     * Convert a temporary Map from getPatternGroups() method into final return object.
+     * @param toConvert Map to convert
+     * @return converted Map object
+     */
+    public TreeMap<Integer,String> toProperFormat(TreeMap<Integer,StringBuilder> toConvert){
         TreeMap<Integer,String> groups = new TreeMap<Integer, String>();
         groups.put(0, regex);
-        for(int key : temp.keySet()){
-            groups.put(key, temp.get(key).toString());
+        for(int key : toConvert.keySet()){
+            groups.put(key, toConvert.get(key).toString());
         }
         return groups;
     }
@@ -115,6 +125,6 @@ public class Grouper {
      * @return true if group is capturing
      */
     public boolean isGrouping(int i){
-        return !regex.substring(i,i+3).equals("(?:") && !regex.substring(i,i+4).matches("\\(\\?[ixmsud]\\)");
+        return !(regex.length() >= i +4 && regex.substring(i,i+3).equals("(?:") && regex.substring(i,i+4).matches("\\(\\?[ixmsud]\\)"));
     }
 }

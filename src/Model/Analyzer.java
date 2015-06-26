@@ -8,6 +8,10 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Divide the regular expression, and matched text example into related parts: fragment of expression with part of
+ * example, matched by this particular fragment.
+ */
 public class Analyzer{
     private String regex;
     private String example;
@@ -24,21 +28,9 @@ public class Analyzer{
     }
 
     /**
-     *Divides used pattern and text into parts, depending on which part was responsible for matching of particular
-     *text fragment.
-     *
-     *Takes two Strings: Pattern (regular expression for matching purposes), and Example (text to match), and use
-     *multiple sub-strings of the Pattern (from a range: [0 - pattern.length()]) as separate regular expression
-     *patterns, for matching in given Example. If a particular substring matches to fragment of Example, it writes:
-     *end index of match in Example, and start index of substring in Patter; into TreeMap, which holds record for
-     *all matches for particular pattern-example set.
-     *Method throws PatternSyntax and IllegalState Exceptions, as a part of regular method flow, to distinguish invalid
-     *patterns, from valid pattern which are then recorded.
-     * @return TreeMap\<Integer,Integer\> with two sets of indices - for Pattern and Example Strings.
-     */
-    /**
-     * analyze składa się teraz z dwóch elementów, analizy od przodu i od tyłu, później wyniki są łączone
-     * @return a
+     * Marge the results of analyzeForward() and analyzeBackward() methods to ensure the most correct results of
+     * analysis. The junction of results corrects errors caused by analyzing only front to back, or back to front.
+     * @return TreeMap with connected results
      */
     public TreeMap<Integer,Integer> analyze(){             // merge two versions
         TreeMap<Integer,Integer> merged = new TreeMap<Integer, Integer>();
@@ -58,25 +50,51 @@ public class Analyzer{
         return merged;
     }
 
+    /**
+     *Divides used pattern and text into parts, depending on which part was responsible for matching of particular
+     *text fragment.
+     *
+     *Takes two Strings: Pattern (regular expression for matching purposes), and Example (text to match), and use
+     *multiple sub-strings of the Pattern (from a range: [0 - pattern.length()]) as separate regular expression
+     *patterns, for matching in given Example. If a particular substring matches to fragment of Example, it writes:
+     *end index of match in Example, and start index of substring in Patter; into TreeMap, which holds record for
+     *all matches for particular pattern-example set.
+     *Method throws PatternSyntax and IllegalState Exceptions, as a part of regular method flow, to distinguish invalid
+     *patterns, from valid pattern which are then recorded.
+     * @return TreeMap\<Integer,Integer\> with two sets of indices - for Pattern and Example Strings.
+     */
     private TreeMap<Integer, Integer> analyzeForward(){
-        TreeMap<Integer, Integer> divided = new TreeMap<Integer, Integer>();
+        TreeMap<Integer, Integer> matched = new TreeMap<Integer, Integer>();
 
         for(int i = 0; i <= regex.length() ; i++){    // int i decide about length of substring
             try{
                 pattern = Pattern.compile(regex.substring(0,i));
                 matcher = pattern.matcher(example);
                 matcher.find();
-                divided.put(i, matcher.end());
+                matched.put(i, matcher.end());
             }catch (Exception ex){
                 Main.exceptionMessage(ex);
             }
         }
 
-        return divided;
+        return matched;
     }
 
+    /**
+     *Divides used pattern and text into parts, depending on which part was responsible for matching of particular
+     *text fragment.
+     *
+     *Takes two Strings: Pattern (regular expression for matching purposes), and Example (text to match), and use
+     *multiple sub-strings of the Pattern (from a range: [pattern.length() - 0) as separate regular expression
+     *patterns, for matching in given Example. If a particular substring matches to fragment of Example, it writes:
+     *start index of match in Example, and start index of substring in Patter; into TreeMap, which holds record for
+     *all matches for particular pattern-example set.
+     *Method throws PatternSyntax and IllegalState Exceptions, as a part of regular method flow, to distinguish invalid
+     *patterns, from valid pattern which are then recorded.
+     * @return TreeMap\<Integer,Integer\> with two sets of indices - for Pattern and Example Strings.
+     */
     private TreeMap<Integer, Integer> analyzeBackward(){
-        TreeMap<Integer, Integer> divided = new TreeMap<Integer, Integer>();
+        TreeMap<Integer, Integer> matched = new TreeMap<Integer, Integer>();
         for(int i = regex.length(); i >= 0 ; i--){    // int i decide about length of substring
             try{
                 String temp = getProperSample(regex.substring(i));
@@ -84,23 +102,24 @@ public class Analyzer{
                 matcher = pattern.matcher(example);
                 matcher.find();
                 if(i == regex.length() && matcher.start()==0){      //is it necessary with merge?
-                    divided.put(i, example.length());
+                    matched.put(i, example.length());
                     continue;
                 }
-                divided.put(i, matcher.start());
+                matched.put(i, matcher.start());
             }catch (Exception ex){
                 Main.exceptionMessage(ex);
             }
         }
-        divided = checkForEndOfALina(divided);
-        return divided;
+        matched = checkForEndOfALina(matched);
+        return matched;
     }
 
     /**
-     * zmienia fragmenty zwiazane z powtarzeniem schwytanego wzoru: /1/2/3 na schwytane fragmenty, tak by dopasowało
-     * dokładnie to samo
-     * @param str  a
-     * @return a
+     * Changes the calls for captured groups (for example \1,\2,\3) for exact literal content of captured particular
+     * group to ensure successful match during backward analyzing. Without that, the call fragments would not match
+     * for any example text part.
+     * @param str  String containing call for captured group
+     * @return String with calls for capturing groups replaced by groups literal content
      */
     private String getProperSample(String str){
 
@@ -173,6 +192,13 @@ public class Analyzer{
         return toCheck;
     }
 
+    /**
+     * Trims look behind and look ahead statements from regular expression before displaying in GUI, as those are not
+     * supported by Analyzer. It is caused by fact, that these elements of regular expressions do not actually match
+     * parts of result string, but only checks if there are demanded fragments before or/and after matched text.
+     * @param regex regular expression
+     * @return regular expression without "look around" parts
+     */
     public static String trimLookAround(String regex){
         Grouper grouper = new Grouper();
         TreeMap<Integer,String> groups = grouper.getPatternsGroups(regex);
@@ -184,19 +210,25 @@ public class Analyzer{
         return regex;
     }
 
+    /**
+     * Checks if in returned by analyzing methods TreeMaps are results which will cause BadLocationException. If
+     * some part of regular expression is able to match whole example(for example by use of greedy
+     * *+ or ?), results of match will distort the match values given by next checked regular expressions parts. To
+     * avoid BadLocationExceptions such indices are replaced by beginning index of next successful match.
+     * @param sample TreeMap with indices of successful matches by various regex parts
+     * @return checked and validated TreeMap
+     */
     private TreeMap<Integer,Integer> validate(TreeMap<Integer,Integer> sample){
         ArrayList<Integer> keys = new ArrayList<Integer>(sample.keySet());
         Collections.reverse(keys);
 
         int lastValue = example.length();
-        int lastKey = regex.length();
 
         for(int key : keys){
             if(sample.get(key) > lastValue){
                 sample.put(key,lastValue);
             }
             lastValue = sample.get(key);
-            lastKey = key;
         }
 
         return sample;
