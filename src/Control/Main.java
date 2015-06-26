@@ -57,7 +57,6 @@ public class Main {
         }
 
         userInterface.updateStatus("");
-        explanator.resetIndentation();
     }
 
     /**

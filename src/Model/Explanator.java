@@ -44,13 +44,17 @@ public class Explanator{
 
             i += skipIndices;                                   // to skip character already described by specialized methods
 
-            if(isClosing(result)) indent = indent.substring(0,indent.length()-8);       // controls indention, with
+            if(isClosing(result)){
+                indent = indent.substring(0,indent.length()-8);
+            }       // controls indention, with
                                                                                         // every opening bracket
             builder.append(indent);                                                     // it moves text to the right,
             builder.append(result);                                                     // and with every closing
             builder.append("\n");                                                       // bracket, to the left
 
-            if(isOpening(result)) indent += "        ";
+            if(isOpening(result)){
+                indent += "        ";
+            }
         }
 
         return builder.toString();
@@ -59,7 +63,7 @@ public class Explanator{
 
     private String explainCharacterClass(int i){
         if(isMetacharacterInCharacterClass(i)){
-            if(expression.substring(i,i+1).equals("^") && !(expression.substring(i-1,i).equals("["))){
+            if(isNegation(i)){
                 return matchCharacter("^");
             }
             return explainSpecialCase(i);
@@ -88,7 +92,7 @@ public class Explanator{
                 return matchBackslash(i);
 
             case BEGINNING_OF_LINE:
-                return matchBeginningOrEnd(i);
+                return matchBeginning(i);
 
             case OPEN_SQUARE_BRACKET:
                 isInsideClass++;
@@ -109,7 +113,7 @@ public class Explanator{
             case QUESTION_MARK:
                 return matchQuestionMark(i);
             case END_OF_LINE:
-                return matchBeginningOrEnd(i);
+                return matchEnd(i);
             case AND:
                 return matchAnd(i);
             case PLUS:
@@ -153,7 +157,7 @@ public class Explanator{
             skipIndices++;
             return expression.substring(i,i+2) + hyphen + "backreference to captured group: " +
                     new Grouper().getPatternsGroups(expression).get(Integer.parseInt(expression.substring(i+1,i+2)));
-        }else if(isNamedGroup(escapeSequence)){
+        }else if(isCallOfNamedGroup(escapeSequence)){
             int open = expression.indexOf("<",i);
             int close = expression.indexOf(">",i);
             skipIndices += close - i;
@@ -185,9 +189,18 @@ public class Explanator{
             }
         }
     }
-    private String matchBeginningOrEnd(int i){
+    private String matchBeginning(int i){
         String character = expression.substring(i,i+1);
-        if(i== 0 || i == 1 || i == expression.length()-2 || i == expression.length()-1){
+        if(expression.substring(0,i).matches("(\\(+(\\?[ixmsdu]+\\))*)+")){
+            return character + hyphen + description.get(character).split("\\.")[0];
+        }else{
+            return character + hyphen + description.get(character).split("\\.")[1];
+        }
+    }
+
+    private String matchEnd(int i){
+        String character = expression.substring(i,i+1);
+        if(i >= expression.length()-2){
             return character + hyphen + description.get(character).split("\\.")[0];
         }else{
             return character + hyphen + description.get(character).split("\\.")[1];
@@ -204,7 +217,7 @@ public class Explanator{
     }
 
     private String matchAnd(int index){
-        if(isInBounds(index,2) && expression.charAt(index+1)=='&'){
+        if(isLogicalAnd(index)){
             skipIndices = 1;
             return  "&&" + hyphen + description.get("&&");
         }else{
@@ -224,7 +237,7 @@ public class Explanator{
         }else if(isInBounds(i,2) && expression.substring(i,i+2).matches("\\?[=!>:\\+\\?]")){
             skipIndices +=1;
             return expression.substring(i,i+2) + hyphen + description.get(expression.substring(i,i+2));
-        }else if(expression.substring(i,i+2).equals("?<")){
+        }else if(isNamedGroup(i)){
             int open = expression.indexOf("<",i);
             int close = expression.indexOf(">",i);
             skipIndices += close - i;
@@ -234,13 +247,30 @@ public class Explanator{
     }
 
     public String matchModes(int i){
-        String mode = expression.substring(i,i+4);
-        skipIndices += 3;
+        int end = expression.indexOf(")",i)+1;
+        String mode = expression.substring(i,end);
         System.out.println(mode);
-        return mode + hyphen + description.get(mode);
+        String result = "";
+        skipIndices += end - i - 1;
+        for(int r = 2; r < mode.length()-1; r++){
+             result += indent+"    " + description.get("(?" + mode.charAt(r) + ")") + ",";
+            if(r != mode.length()-2) result += "\n";
+        }
+        return mode + hyphen + "modes: \n" + result;
     }
 
-    public void resetIndentation(){
+    public boolean isNegation(int i){
+        return expression.substring(i,i+1).equals("^") && !(expression.substring(i-1,i).equals("["));
+    }
+    public boolean isLogicalAnd(int i){
+        return isInBounds(i,2) && expression.charAt(i+1)=='&';
+    }
+    public boolean isNamedGroup(int i){
+        return expression.substring(i,i+2).equals("?<");
+    }
+
+    public boolean isCallOfNamedGroup(String substring){
+        return substring.equals("\\k");
     }
 
     private boolean isSpecialCase(String character){
@@ -277,19 +307,18 @@ public class Explanator{
     }
 
     public boolean isOpening(String substring){
-        return substring.contains("opening");
+        return substring.contains("opening") && (!substring.contains("escape"));
     }
 
     public boolean isClosing(String substring){
-        return substring.contains("closing");
+        return substring.contains("closing") && (!substring.contains("escape"));
     }
 
-    public boolean isNamedGroup(String substring){
-        return substring.equals("\\k");
-    }
+
 
     public boolean isMode(int i){
-        return isInBounds(i,4) && expression.substring(i,i+4).matches("\\(\\?[ixmsud]\\)");
+        int end = expression.indexOf(")",i)+1;
+        return isInBounds(i,end-i) && expression.substring(i,end).matches("\\(\\?[ixmsud]+\\)");
     }
 
 }

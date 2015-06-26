@@ -41,7 +41,6 @@ public class IO {
         }catch (IOException ex){
             ex.printStackTrace();
         }
-        System.out.println(elements.toString());
         return elements;
     }
 }

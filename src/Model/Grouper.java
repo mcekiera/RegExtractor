@@ -29,17 +29,17 @@ public class Grouper {
                                     // other backslash
 
         ArrayList<StringBuilder> builders = new ArrayList<StringBuilder>();
-        for(int index = 0; index < regex.length(); index++){
-            String current = regex.substring(index,index+1);
+        for(int i = 0; i < regex.length(); i++){
+            String current = regex.substring(i,i+1);
 
             if(current.equals("\\")){
                 escape++;
             }
 
-            if(isOpeningParenthesis(index)){
+            if(isOpeningParenthesis(i)){
                 StringBuilder builder = new StringBuilder();
                 builders.add(level++, builder);
-                if(isGrouping(index)) {
+                if(isGrouping(i)) {
                     temp.put(place++, builder);
                 }
             }
@@ -48,7 +48,7 @@ public class Grouper {
                 builders.get(k).append(current);
             }
 
-            if(isClosingParenthesis(index)){
+            if(isClosingParenthesis(i)){
                 level --;
             }
         }
@@ -76,7 +76,7 @@ public class Grouper {
             for(int i = 0; i <= matcher.groupCount(); i++){
                 groups.put(i,matcher.group(i));
             }
-        }catch (Exception ex){       //try-catch block is kept inside of method, to ensure
+        }catch (Exception ex){
             Main.exceptionMessage(ex);
         }
         return groups;
