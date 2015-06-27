@@ -5,7 +5,9 @@ import Control.IO;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 
-
+/**
+ * Responsible to explaining given regex by describing its elements
+ */
 public class Explanator{
     private final String[] special = {"\\","p", ")","(","[","]","{","}","^","$","?","&","+","*"};
     private final String[] metaInCharClass = {"\\","^","]","["};
@@ -22,6 +24,11 @@ public class Explanator{
         hyphen = "  -  ";
     }
 
+    /**
+     * Iterate through all regular expression character, and describe its usage int this particular case
+     * @param regex described regular expression
+     * @return description of regular expression
+     */
     public String explain(String regex){
         expression = regex;
         isInsideClass = 0;
@@ -60,7 +67,11 @@ public class Explanator{
         return builder.toString();
     }
 
-
+    /**
+     * Describe characters inside character class
+     * @param i beginning index
+     * @return description of character class elements
+     */
     private String explainCharacterClass(int i){
         if(isMetacharacterInCharacterClass(i)){
             if(isNegation(i)){
@@ -76,6 +87,11 @@ public class Explanator{
         }
     }
 
+    /**
+     * Recognize simple case character and pass it to proper method
+     * @param i character index
+     * @return description returned by method the case was passed
+     */
     private String explainSimpleCase(int i){
         String character = expression.substring(i,i+1);
         if(isSimpleMetacharacter(character) && !(isInsideCharClass())){
@@ -85,6 +101,11 @@ public class Explanator{
         }
     }
 
+    /**
+     * Recognizes special case characters and pass it to proper method
+     * @param i character index
+     * @return description returned by method the case was passed
+     */
     private String explainSpecialCase(int i){
         String character = expression.substring(i,i+1);
         switch(Special.getSpecial(character)){
@@ -117,17 +138,21 @@ public class Explanator{
             case AND:
                 return matchAnd(i);
             case PLUS:
-                return matchPlus(i);
             case STAR:
-                return matchStar(i);
+                return matchQuantifier(i);
             default:
                 return "Unexpected sequence";
 
         }
     }
 
-    private String matchPlus(int i){
-        if(isInBounds(i,2) && expression.substring(i,i+2).matches("\\+[?+]")){
+    /**
+     * Recognize and describe in what meaning the quantifier (+ or *) char is used
+     * @param i beginning sequence index
+     * @return description of sequence
+     */
+    private String matchQuantifier(int i){
+        if(isInBounds(i,2) && expression.substring(i,i+2).matches("[+*][?+]")){
             skipIndices++;
             return  expression.substring(i,i+2) + hyphen + description.get(expression.substring(i,i+2));
         }else{
@@ -135,15 +160,11 @@ public class Explanator{
         }
     }
 
-    private String matchStar(int i){
-        if(isInBounds(i,2) && expression.substring(i,i+2).matches("\\*[?+]")){
-            skipIndices++;
-            return  expression.substring(i,i+2) + hyphen + description.get(expression.substring(i,i+2));
-        }else{
-            return expression.substring(i,i+1) + hyphen + description.get(expression.substring(i,i+1));
-        }
-    }
-
+    /**
+     * Recognize and describe meta-sequence which begin with backslash mark \ on given index
+     * @param i character index
+     * @return description of meta-sequence
+     */
     private String matchBackslash(int i){
         String escapeSequence = expression.substring(i,i+2);
         if(description.containsKey(escapeSequence)){           // is declared meta-sequence
@@ -170,6 +191,11 @@ public class Explanator{
         }
     }
 
+    /**
+     * Recognize and describe internal part of interval sequence: {x},{x,},{x,x}.
+     * @param i beginning sequence index
+     * @return description of sequence
+     */
     private String matchInterval(int i){
         String range = expression.substring(i + 1, expression.indexOf("}", i));
         if(!range.contains(",")){
@@ -189,6 +215,12 @@ public class Explanator{
             }
         }
     }
+
+    /**
+     * Recognize and describe in what meaning the roof mark '^' is used
+     * @param i character index
+     * @return appropriate description of character
+     */
     private String matchBeginning(int i){
         String character = expression.substring(i,i+1);
         if(expression.substring(0,i).matches("(\\(+(\\?[ixmsdu]+\\))*)+")){
@@ -198,6 +230,11 @@ public class Explanator{
         }
     }
 
+    /**
+     * Recognize and describe in what meaning the dollar mark '$' is used
+     * @param i character index
+     * @return appropriate description of character
+     */
     private String matchEnd(int i){
         String character = expression.substring(i,i+1);
         if(i >= expression.length()-2){
@@ -207,15 +244,30 @@ public class Explanator{
         }
     }
 
+    /**
+     * Describe non-meta characters, or meta-character when they are treated as simple characters
+     * @param character described
+     * @return description of character
+     */
     private String matchCharacter(String character){
         return character + hyphen + "matching for character: "+ character;
     }
 
+    /**
+     * Describe simple meta-character
+     * @param i character index
+     * @return description of character
+     */
     private String matchSimpleMetacharacter(int i){
         String character = expression.substring(i,i+1);
         return character + hyphen + description.get(character);
     }
 
+    /**
+     * Recognize and describe meta-sequence which begin with and mark '&' on given index
+     * @param index character index
+     * @return description of meta-sequence
+     */
     private String matchAnd(int index){
         if(isLogicalAnd(index)){
             skipIndices = 1;
@@ -225,10 +277,20 @@ public class Explanator{
         }
     }
 
+    /**
+     * Describe closing bracket
+     * @param character described
+     * @return description of character
+     */
     private String closingBracket(String character){
         return character + hyphen + description.get(character);
     }
 
+    /**
+     * Recognize and describe meta-sequence which begin with question mark ? on given index
+     * @param i character index
+     * @return description of meta-sequence
+     */
     private String matchQuestionMark(int i){
         String character = expression.substring(i,i+1);
         if(isInBounds(i,3) && expression.substring(i,i+3).matches("\\?[=!<>][=!]")){
@@ -246,6 +308,11 @@ public class Explanator{
         return character + hyphen + description.get(character);
     }
 
+    /**
+     * Recognize and describe particular modes (?ixmsud) beginning from given index
+     * @param i character index
+     * @return description of mode
+     */
     public String matchModes(int i){
         int end = expression.indexOf(")",i)+1;
         String mode = expression.substring(i,end);
@@ -259,24 +326,56 @@ public class Explanator{
         return mode + hyphen + "modes: \n" + result;
     }
 
+    /**
+     * Verify if given roof symbol '^' is a beginning of negation statement in character class
+     * @param i character index
+     * @return true if it is
+     */
     public boolean isNegation(int i){
         return expression.substring(i,i+1).equals("^") && !(expression.substring(i-1,i).equals("["));
     }
+
+    /**
+     * Verify if character on given index is a part of logical and metacharacter &&
+     * @param i character index
+     * @return true if it is
+     */
     public boolean isLogicalAnd(int i){
         return isInBounds(i,2) && expression.charAt(i+1)=='&';
     }
+
+    /**
+     * Verify if character at given index is a beginning of named group
+     * @param i character index
+     * @return true if it equals "?<"
+     */
     public boolean isNamedGroup(int i){
         return expression.substring(i,i+2).equals("?<");
     }
 
+    /**
+     * Verify if given string is a call to named capturing group
+     * @param substring described
+     * @return true if string equals "\k"
+     */
     public boolean isCallOfNamedGroup(String substring){
         return substring.equals("\\k");
     }
 
+    /**
+     * Verify if given character is potentially more complicated text and therefore should be treated carefully
+     * @param character described
+     * @return true if it is on special case list {"\\","p", ")","(","[","]","{","}","^","$","?","&","+","*"}
+     */
     private boolean isSpecialCase(String character){
         return Arrays.asList(special).contains(character);
     }
 
+    /**
+     * Verify if given character is simple and single metacharacter, or more complicated to recognize sequence
+     * @param character described
+     * @return true if it is on list of simple metacharacters
+     */
     private boolean isSimpleMetacharacter(String character){
         return description.containsKey(character);
     }
@@ -310,14 +409,29 @@ public class Explanator{
         return expression.length() >= index + expectedLength;
     }
 
+    /**
+     * Verify if currently described element is in character class and therefore should be treated differently
+     * @return true if it is in character class
+     */
     private boolean isInsideCharClass(){
         return isInsideClass > 0;
     }
 
-    private boolean isPOSIX(char ch){
-        return ch == 'p' || ch == 'P';
+    /**
+     * Verify if given character, occurring after backslash('\'), is a symbol of POSIX
+     * @param character described
+     * @return true if character is 'p' or 'P'
+     */
+    private boolean isPOSIX(char character){
+        return character == 'p' || character == 'P';
     }
 
+    /**
+     * Verify if character on given index is a metacharacter inside a character class and therefore should be treated
+     * differently
+     * @param i index of char
+     * @return true if char is a metacharacter in character class
+     */
     private boolean isMetacharacterInCharacterClass(int i){
         return Arrays.asList(metaInCharClass).contains(expression.substring(i, i+1));
     }
