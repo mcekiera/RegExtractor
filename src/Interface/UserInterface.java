@@ -21,6 +21,9 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.TreeMap;
 
+/**
+ * Creates GUI
+ */
 public class UserInterface {
     private JFrame frame;
     private JTextField statusBar;
@@ -45,6 +48,10 @@ public class UserInterface {
     private JCheckBox multiline;
     private JCheckBox caseSensitive;
 
+    /**
+     * Basic constructor, creates JFrame and implements all necessary components.
+     * @param main reference to Main class object, which controls GUI behaviour and pass data form GUI to model classes
+     */
     public UserInterface(Main main){
         frame = new JFrame();
         this.main = main;
@@ -56,13 +63,15 @@ public class UserInterface {
         inputRegex.getDocument().addDocumentListener(new TextListener());
         JButton reset = new JButton("RESET");
         reset.addActionListener(new ActionListener() {
+            /**
+             * Reset content of all text components
+             * @param e ActionEvent
+             */
             @Override
             public void actionPerformed(ActionEvent e) {
                 resetView();
                 inputRegex.setText("");
                 explain.setText("");
-                regexView.setText("");
-                exampleView.setText("");
                 matcherView.setText("");
             }
         });
@@ -82,8 +91,11 @@ public class UserInterface {
         frame.setVisible(true);
     }
 
+    /**
+     * Creates tabbed display
+     * @return JTabbedPane with all panels
+     */
     public JTabbedPane buildTabPanel(){
-
         tab = new JTabbedPane();
 
         tab.addTab("Analyze", buildAnalyzerDisplay());
@@ -92,6 +104,9 @@ public class UserInterface {
         tab.addTab("Groups", buildGroupPanel());
         tab.addChangeListener(new ChangeListener() {
             @Override
+            /**
+             * Controls selection of tab and therefore choose set of currently working GUI methods
+             */
             public void stateChanged(ChangeEvent e) {
                 if (tab.getSelectedIndex() == 0) {
                     main.setTabs(Tabs.MATCH);
@@ -109,6 +124,10 @@ public class UserInterface {
         return tab;
     }
 
+    /**
+     * Creates split tab in which splitting of text by given regular expression is displayed
+     * @return JScrollPane
+     */
     public JScrollPane buildSplitPanel(){
         splittedText = new JTextArea();
         splittedText.setWrapStyleWord(true);
@@ -118,12 +137,20 @@ public class UserInterface {
 
     }
 
+    /**
+     * Creates explaining tab in which explaining of regular expression is displayed
+     * @return JScrollPane
+     */
     public JScrollPane buildExplainPanel(){
         explain = new JTextArea();
         explain.setFont(new Font("Arial", Font.BOLD, 16));
         return new JScrollPane(explain);
     }
 
+    /**
+     * Creates analyzing display with example list, and two text fields displaying analyzed example
+     * @return JPanel
+     */
     public JPanel buildAnalyzerDisplay(){
         JPanel all = new JPanel(new GridLayout(2,1));
 
@@ -133,6 +160,10 @@ public class UserInterface {
         examplesList.setLayoutOrientation(JList.VERTICAL);
         examplesList.setVisibleRowCount(-1);
         examplesList.addMouseListener(new MouseAdapter() {
+            /**
+             * Controls selection of example to analyze, from list of matched fragments
+             * @param e MouseEvent
+             */
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
@@ -172,6 +203,10 @@ public class UserInterface {
         return all;
     }
 
+    /**
+     * Creates text area in which regular expression matching is displayed
+     * @return JSplitPane
+     */
     public JSplitPane buildMatcherDisplay(){
         matcherView = new JTextArea();
         matcherView.getDocument().addDocumentListener(new TextListener());
@@ -189,12 +224,20 @@ public class UserInterface {
         return pane;
     }
 
+    /**
+     * Creates status bar for warning display
+     * @return JTextField
+     */
     public JTextField buildStatusBar(){
         statusBar = new JTextField();
         statusBar.setEditable(false);
         return statusBar;
     }
 
+    /**
+     * Creates side panel with options selection and builder panel
+     * @return JPanel
+     */
     public JPanel buildSidePanel(){
         JPanel panel = new JPanel();
         DefaultListModel<String> model = new DefaultListModel<String>();
@@ -203,6 +246,11 @@ public class UserInterface {
             model.addElement(key);
         }
         builder.addMouseListener(new MouseAdapter() {
+
+            /**
+             * Controls selection from building panel list
+             * @param e MouseEvent
+             */
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);    //To change body of overridden methods use File | Settings | File Templates.
@@ -214,6 +262,10 @@ public class UserInterface {
             }
         });
         builder.addListSelectionListener(new ListSelectionListener() {
+            /**
+             * Controls contents displayed on building text area
+             * @param e ListSelectionEvent
+             */
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 descriptionArea.setText(IO.load().get(builder.getSelectedValue().toString()));
@@ -235,6 +287,10 @@ public class UserInterface {
         return panel;
     }
 
+    /**
+     * Creates side panel part responsible for displaying modes options
+     * @return JPanel
+     */
     public JPanel buildOptions(){
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel,BoxLayout.PAGE_AXIS));
@@ -247,122 +303,10 @@ public class UserInterface {
         return panel;
     }
 
-    public void updateStatus(String message){
-        statusBar.setText(message);
-    }
-
-    public String getRegEx(){
-        return inputRegex.getText();
-    }
-
-    public String getTextForMatching(){
-        return matcherView.getText();
-    }
-
-    public void highlightMatchedText(TreeMap<Integer,Integer> toHighlight){
-        highlighter.removeAllHighlights();
-        for (int index : toHighlight.keySet()) {
-            try {
-                highlighter.addHighlight(index, toHighlight.get(index), getPainter());
-            } catch (BadLocationException ex) {
-                Main.exceptionMessage(ex);
-            }
-        }
-    }
-
-    public void displayExplanation(String description){
-         explain.setText(description);
-    }
-
-    public void updateSplitTab(String[] parts){
-        splittedText.setText(Arrays.toString(parts));
-    }
-
-    public void highlightAnalyzedElements(TreeMap<Integer, Integer> elements){
-        int r = 0;
-        Highlighter.HighlightPainter pointer;
-        for(int i : elements.keySet()){
-            pointer = getPainter();
-            try{
-                forExample.addHighlight(elements.get(r),elements.get(i),pointer);
-                forPattern.addHighlight(r,i,pointer);
-            }catch (BadLocationException ex){
-                Main.exceptionMessage(ex);
-            }
-            r = i;
-        }
-
-    }
-
-    public void updateAnalyzer(String regex,String example){
-        regexView.setText(Analyzer.trimLookAround(regex));
-        exampleView.setText(example);
-        ifNotSupported(regex);
-    }
-
-    public void updateExamples(){
-        examples.clear();
-        for(Highlighter.Highlight light : highlighter.getHighlights()){
-           examples.addElement(matcherView.getText().substring(light.getStartOffset(), light.getEndOffset()));
-        }
-    }
-
-    public static Highlighter.HighlightPainter getPainter(){
-        Random random = new Random();
-        int mod = 76;
-        int red = random.nextInt(256-mod)+mod;
-        int green = random.nextInt(256-mod)+mod;
-        int blue = random.nextInt(256-mod)+mod;
-
-        return new DefaultHighlighter.DefaultHighlightPainter(new Color(red,green,blue));
-    }
-
-    public void resetView(){
-        examples.removeAllElements();
-        splittedText.setText("");
-        highlighter.removeAllHighlights();
-    }
-
-
-    private class TextListener implements DocumentListener {
-        @Override
-        public void insertUpdate(DocumentEvent e) {
-            resetView();
-            main.updateMatchView();
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            resetView();
-            main.updateMatchView();
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            resetView();
-            main.updateMatchView();
-        }
-    }
-    public void ifNotSupported(String regex){
-        String warning = "";
-        if(regex.contains("??") || regex.contains("*?") || regex.contains("+?") || regex.contains("?+")
-                || regex.contains("*+") || regex.contains("++") || regex.contains("}+") || regex.contains("?+")){
-            warning += "reluctant and possessive quantifiers, ";
-        }
-
-        if(regex.contains("(?=") || regex.contains("(?!") || regex.contains("(?<=") || regex.contains("(?<!")){
-            warning += "look ahead and look behind matches,";
-        }
-
-        if(regex.contains("?>")){
-            warning += "atomic grouping";
-        }
-
-        if(warning.length()>0){
-        updateStatus("Analyzer does not support: " + warning.substring(0,warning.length()-1) + " ...Visualization could show wrong results!");
-        }
-    }
-
+    /**
+     * Creates grouping tab, when captured by regex groups, and grouping parts of regex are displayed
+     * @return JPanel
+     */
     public JPanel buildGroupPanel(){
         JPanel all = new JPanel(new GridLayout(2,1));
         String[] columnNames = {"No","Pattern part","Example part"};
@@ -378,6 +322,10 @@ public class UserInterface {
         groupList.setLayoutOrientation(JList.VERTICAL);
         groupList.setVisibleRowCount(-1);
         groupList.addMouseListener(new MouseAdapter() {
+            /**
+             * Controls selection of example to divide into groups
+             * @param e MouseEvent
+             */
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
@@ -395,6 +343,154 @@ public class UserInterface {
         return all;
     }
 
+    /**
+     * @return currently used regular expression
+     */
+    public String getRegEx(){
+        return inputRegex.getText();
+    }
+
+    /**
+     * @return given text example for matching purposes
+     */
+    public String getTextForMatching(){
+        return matcherView.getText();
+    }
+
+    /**
+     * Highlights text on matching area, matched by currently used regex
+     * @param toHighlight Map with start and end indices of fragments to highlight
+     */
+    public void highlightMatchedText(TreeMap<Integer,Integer> toHighlight){
+        highlighter.removeAllHighlights();
+        for (int index : toHighlight.keySet()) {
+            try {
+                highlighter.addHighlight(index, toHighlight.get(index), getPainter());
+            } catch (BadLocationException ex) {
+                Main.exceptionMessage(ex);
+            }
+        }
+    }
+
+    /**
+     * Highlights parts of selected example and used regex, which are related. The colors of highlight is same for
+     * matched fragment, and part of regex responsible for match
+     * @param elements Map with start and end indices for highlight
+     */
+    public void highlightAnalyzedElements(TreeMap<Integer, Integer> elements){
+        int r = 0;
+        Highlighter.HighlightPainter pointer;
+        for(int i : elements.keySet()){
+            pointer = getPainter();
+            try{
+                forExample.addHighlight(elements.get(r),elements.get(i),pointer);
+                forPattern.addHighlight(r,i,pointer);
+            }catch (BadLocationException ex){
+                Main.exceptionMessage(ex);
+            }
+            r = i;
+        }
+
+    }
+
+    /**
+     * Display description of regex in explains tab
+     * @param description to display
+     */
+    public void displayExplanation(String description){
+         explain.setText(description);
+    }
+
+    /**
+     * Display result of split on given example text by currently used regular expression
+     * @param parts array containing result of split
+     */
+    public void updateSplitTab(String[] parts){
+        splittedText.setText(Arrays.toString(parts));
+    }
+
+    /**
+     * Display given message on status bar
+     * @param message to display
+     */
+    public void updateStatus(String message){
+        statusBar.setText(message);
+    }
+
+    /**
+     * Display in analysis area a chosen text example and currently used regex
+     * @param regex
+     * @param example
+     */
+    public void updateAnalyzer(String regex,String example){
+        regexView.setText(Analyzer.trimLookAround(regex));
+        exampleView.setText(example);
+        ifNotSupported(regex);
+    }
+
+    /**
+     * Displays fragments of example text, matched by given regex, in a JList
+     */
+    public void updateExamples(){
+        examples.clear();
+        for(Highlighter.Highlight light : highlighter.getHighlights()){
+           examples.addElement(matcherView.getText().substring(light.getStartOffset(), light.getEndOffset()));
+        }
+    }
+
+    /**
+     * Provide a colors for highlighting text elements
+     * @return Highlighter.HighlightPainter object witch random color
+     */
+    public static Highlighter.HighlightPainter getPainter(){
+        Random random = new Random();
+        int mod = 76;
+        int red = random.nextInt(256-mod)+mod;
+        int green = random.nextInt(256-mod)+mod;
+        int blue = random.nextInt(256-mod)+mod;
+
+        return new DefaultHighlighter.DefaultHighlightPainter(new Color(red,green,blue));
+    }
+
+    /**
+     * Delete contents of all text components
+     */
+    public void resetView(){
+        examples.removeAllElements();
+        splittedText.setText("");
+        highlighter.removeAllHighlights();
+        regexView.setText("");
+        exampleView.setText("");
+    }
+
+    /**
+     * Checks and display appropriate message on status bar, if in given regular expression are elements which are
+     * not supported, because of various reasons, by analyzing process
+     * @param regex to control
+     */
+    public void ifNotSupported(String regex){
+        String warning = "";
+        if(regex.contains("??") || regex.contains("*?") || regex.contains("+?") || regex.contains("?+")
+                || regex.contains("*+") || regex.contains("++") || regex.contains("}+") || regex.contains("?+")){
+            warning += "reluctant and possessive quantifiers, ";
+        }
+
+        if(regex.contains("(?=") || regex.contains("(?!") || regex.contains("(?<=") || regex.contains("(?<!")){
+            warning += "look ahead and look behind matches,";
+        }
+
+        if(regex.contains("?>")){
+            warning += "atomic grouping";
+        }
+
+        if(warning.length()>0){
+            updateStatus("Analyzer does not support: " + warning.substring(0,warning.length()-1) + " ...Visualization could show wrong results!");
+        }
+    }
+
+    /**
+     * Provide matching and matched groups of particular regex and text and display it on JList
+     */
     public void updateGroups(){
 
         Grouper grouper = new Grouper();
@@ -413,10 +509,48 @@ public class UserInterface {
             model.insertRow(i,row);
         }
         frame.revalidate();
-
     }
 
+    /**
+     * Controls reaction on user text input and change
+     */
+    private class TextListener implements DocumentListener {
+        /**
+         * Reacts on text insertion
+         */
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            resetView();
+            main.updateMatchView();
+        }
+
+        /**
+         * Reacts on text removal
+         */
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            resetView();
+            main.updateMatchView();
+        }
+
+        /**
+         * Reacts on changes in text
+         */
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            resetView();
+            main.updateMatchView();
+        }
+    }
+
+    /**
+     * Controls selection of options(modes of regex)
+     */
     private class OptionsUpdater implements ItemListener {
+        /**
+         * Reacts on user selection of modes
+         * @param e ItemEvent
+         */
         @Override
         public void itemStateChanged(ItemEvent e) {
             if(multiline.isSelected() && caseSensitive.isSelected()){

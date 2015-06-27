@@ -281,15 +281,31 @@ public class Explanator{
         return description.containsKey(character);
     }
 
+    /**
+     * Verify if range (ex. {2},{2,},{2,5}) occur on given index of regular expression
+     * @param index index of regex
+     * @return true if range starts at given index
+     */
     private boolean isRange(int index){
         return isInBounds(index,3) && isLetterOrDigit(expression.charAt(index)) && expression.charAt(index+1)=='-' &&
                 isLetterOrDigit(expression.charAt(index+2));
     }
 
+    /**
+     * Verify if character index of regular expression is letter or digit
+     * @param character given character
+     * @return true if given char is a letter or digit
+     */
     private boolean isLetterOrDigit(char character){
         return Character.isDigit(character) || Character.isLetter(character);
     }
 
+    /**
+     * Verify if given indices fit inside of regular expression length bounds
+     * @param index start index
+     * @param expectedLength length of substring
+     * @return true if it stay in bounds
+     */
     private boolean isInBounds(int index, int expectedLength){
         return expression.length() >= index + expectedLength;
     }
@@ -306,16 +322,29 @@ public class Explanator{
         return Arrays.asList(metaInCharClass).contains(expression.substring(i, i+1));
     }
 
+    /**
+     * Verify if regular opening brackets occur inside given String
+     * @param substring String of length: 1  containing one character
+     * @return true if this character is a regular opening bracket
+     */
     public boolean isOpening(String substring){
         return substring.contains("opening") && (!substring.contains("escape"));
     }
 
+    /**
+     * Verify if regular closing brackets occur inside given String
+     * @param substring String of length: 1  containing one character
+     * @return true if this character is a regular closing bracket
+     */
     public boolean isClosing(String substring){
         return substring.contains("closing") && (!substring.contains("escape"));
     }
 
-
-
+    /**
+     * Verify if regex modes (?ximsud) occur on given index of regular expression
+     * @param i index of regex
+     * @return true if modes begins on that index
+     */
     public boolean isMode(int i){
         int end = expression.indexOf(")",i)+1;
         return isInBounds(i,end-i) && expression.substring(i,end).matches("\\(\\?[ixmsud]+\\)");
