@@ -313,7 +313,7 @@ public class Explanator{
      * @param i character index
      * @return description of mode
      */
-    public String matchModes(int i){
+    private String matchModes(int i){
         int end = expression.indexOf(")",i)+1;
         String mode = expression.substring(i,end);
         System.out.println(mode);
@@ -331,7 +331,7 @@ public class Explanator{
      * @param i character index
      * @return true if it is
      */
-    public boolean isNegation(int i){
+    private boolean isNegation(int i){
         return expression.substring(i,i+1).equals("^") && !(expression.substring(i-1,i).equals("["));
     }
 
@@ -340,7 +340,7 @@ public class Explanator{
      * @param i character index
      * @return true if it is
      */
-    public boolean isLogicalAnd(int i){
+    private boolean isLogicalAnd(int i){
         return isInBounds(i,2) && expression.charAt(i+1)=='&';
     }
 
@@ -349,7 +349,7 @@ public class Explanator{
      * @param i character index
      * @return true if it equals "?<"
      */
-    public boolean isNamedGroup(int i){
+    private boolean isNamedGroup(int i){
         return expression.substring(i,i+2).equals("?<");
     }
 
@@ -358,7 +358,7 @@ public class Explanator{
      * @param substring described
      * @return true if string equals "\k"
      */
-    public boolean isCallOfNamedGroup(String substring){
+    private boolean isCallOfNamedGroup(String substring){
         return substring.equals("\\k");
     }
 
@@ -441,7 +441,7 @@ public class Explanator{
      * @param substring String of length: 1  containing one character
      * @return true if this character is a regular opening bracket
      */
-    public boolean isOpening(String substring){
+    private boolean isOpening(String substring){
         return substring.contains("opening") && (!substring.contains("escape"));
     }
 
@@ -450,7 +450,7 @@ public class Explanator{
      * @param substring String of length: 1  containing one character
      * @return true if this character is a regular closing bracket
      */
-    public boolean isClosing(String substring){
+    private boolean isClosing(String substring){
         return substring.contains("closing") && (!substring.contains("escape"));
     }
 
@@ -459,7 +459,7 @@ public class Explanator{
      * @param i index of regex
      * @return true if modes begins on that index
      */
-    public boolean isMode(int i){
+    private boolean isMode(int i){
         int end = expression.indexOf(")",i)+1;
         return isInBounds(i,end-i) && expression.substring(i,end).matches("\\(\\?[ixmsud]+\\)");
     }

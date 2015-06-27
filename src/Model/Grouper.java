@@ -62,7 +62,7 @@ public class Grouper {
      * @param toConvert Map to convert
      * @return converted Map object
      */
-    public TreeMap<Integer,String> toProperFormat(TreeMap<Integer,StringBuilder> toConvert){
+    private TreeMap<Integer,String> toProperFormat(TreeMap<Integer,StringBuilder> toConvert){
         TreeMap<Integer,String> groups = new TreeMap<Integer, String>();
         groups.put(0, regex);
         for(int key : toConvert.keySet()){
@@ -124,7 +124,7 @@ public class Grouper {
      * @param i index of character which is currently checking
      * @return true if group is capturing
      */
-    public boolean isGrouping(int i){
+    private boolean isGrouping(int i){
         return !(regex.length() >= i +4 && regex.substring(i,i+3).equals("(?:") && regex.substring(i,i+4).matches("\\(\\?[ixmsud]\\)"));
     }
 }
