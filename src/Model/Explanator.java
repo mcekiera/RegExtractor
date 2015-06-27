@@ -117,6 +117,7 @@ public class Explanator{
 
             case OPEN_SQUARE_BRACKET:
                 isInsideClass++;
+                return matchSimpleMetacharacter(i);
             case OPEN_PARANTHESIS:
                 if(isMode(i)){
                     return matchModes(i);
