@@ -27,18 +27,16 @@ public class IO {
      */
     private LinkedHashMap<String, String> loadElements(){
         LinkedHashMap<String, String> elements = new LinkedHashMap<String,String>();
-        File file = new File("src\\Control\\regex.txt");
         try{
             String line;
-            BufferedReader reader = new BufferedReader(new FileReader(file));
+            InputStreamReader stream = new InputStreamReader(getClass().getResourceAsStream("regex.txt"));
+            BufferedReader reader = new BufferedReader(stream);
             while((line = reader.readLine()) != null){
                 String[] temp = line.split("    ");
                 elements.put(temp[0],temp[1]);
             }
 
-        }catch (FileNotFoundException ex){
-            ex.printStackTrace();
-        }catch (IOException ex){
+        }catch (Exception ex){
             ex.printStackTrace();
         }
         return elements;
